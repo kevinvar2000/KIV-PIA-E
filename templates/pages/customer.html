@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Customer Dashboard</h1>
+
+    <!-- Create New Project -->
+    <div class="card mb-5">
+        <div class="card-header">
+            <h2 class="h5 mb-0">Create New Project</h2>
+        </div>
+        <div class="card-body">
+            <form method="post" action="/projects/create">
+                <div class="mb-3">
+                    <label for="project_name" class="form-label">Project Name:</label>
+                    <input type="text" class="form-control" id="project_name" name="project_name" required>
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description:</label>
+                    <textarea class="form-control" id="description" name="description" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Create Project</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- List of Own Projects -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="h5 mb-0">Your Projects</h2>
+        </div>
+        <ul class="list-group list-group-flush">
+            {% for project in projects %}
+                <li class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ project.name }}</strong> - <span class="badge bg-secondary">{{ project.status }}</span>
+                        </div>
+                        {% if project.status == 'Completed' %}
+                            <div>
+                                <form method="post" action="/projects/{{ project.id }}/accept" class="d-inline">
+                                    <button type="submit" class="btn btn-success btn-sm">Accept</button>
+                                </form>
+                                <button class="btn btn-danger btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#reject-form-{{ project.id }}">Reject</button>
+                            </div>
+                        {% endif %}
+                    </div>
+                    {% if project.status == 'Completed' %}
+                        <div class="collapse mt-2" id="reject-form-{{ project.id }}">
+                            <form method="post" action="/projects/{{ project.id }}/reject">
+                                <div class="mb-2">
+                                    <label for="feedback-{{ project.id }}" class="form-label">Feedback for Translator:</label>
+                                    <textarea class="form-control" id="feedback-{{ project.id }}" name="feedback" required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-warning btn-sm">Submit Rejection</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                </li>
+            {% else %}
+                <li class="list-group-item">No projects found.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

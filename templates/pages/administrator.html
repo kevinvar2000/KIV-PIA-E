@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="mb-4">Administrator Dashboard</h1>
+
+<h2 class="mb-3">Projects with Feedback</h2>
+
+<form method="get" action="" class="row g-3 align-items-center mb-4">
+    <div class="col-auto">
+        <label for="state" class="col-form-label">Filter by State:</label>
+    </div>
+    <div class="col-auto">
+        <select name="state" id="state" class="form-select">
+            <option value="">All</option>
+            <option value="open">Open</option>
+            <option value="in_progress">In Progress</option>
+            <option value="closed">Closed</option>
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Filter</button>
+    </div>
+</form>
+
+<div class="table-responsive">
+<table class="table table-bordered align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>Project Name</th>
+            <th>State</th>
+            <th>Feedback</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for project in projects %}
+            <tr>
+                <td>{{ project.name }}</td>
+                <td>
+                    <span class="badge 
+                        {% if project.state == 'open' %}bg-success
+                        {% elif project.state == 'in_progress' %}bg-warning text-dark
+                        {% elif project.state == 'closed' %}bg-secondary
+                        {% endif %}
+                    ">
+                        {{ project.state|replace("_", " ")|title }}
+                    </span>
+                </td>
+                <td>
+                    <ul class="list-unstyled mb-0">
+                        {% for feedback in project.feedbacks %}
+                            <li class="mb-3">
+                                <strong>{{ feedback.author }}:</strong> {{ feedback.message }}
+                                <form method="post" action="/admin/respond/{{ feedback.id }}" class="row g-2 mt-2">
+                                    <div class="col-md-6">
+                                        <input type="text" name="response" class="form-control" placeholder="Send a message..." required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <select name="recipient" class="form-select">
+                                            <option value="customer">Customer (in-app)</option>
+                                            <option value="translator">Translator (in-app)</option>
+                                            <option value="customer_email">Customer (email)</option>
+                                            <option value="translator_email">Translator (email)</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="submit" class="btn btn-outline-primary w-100">Send</button>
+                                    </div>
+                                </form>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </td>
+                <td>
+                    {% if project.state != "closed" %}
+                        <form method="post" action="/admin/close_project/{{ project.id }}">
+                            <button type="submit" class="btn btn-danger btn-sm">Mark as Closed</button>
+                        </form>
+                    {% else %}
+                        <span class="text-muted">Closed</span>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}

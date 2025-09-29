@@ -1,0 +1,51 @@
+services:
+  server:
+    build: .
+    volumes:
+      - /:/app
+    environment:
+      FLASK_ENV: development
+      FLASK_DEBUG: 1
+      FLASK_APP: app.py
+      DATABASE_HOST: mysql
+      DATABASE_USER: pia_user
+      DATABASE_PASSWORD: pia_password
+      DATABASE_NAME: pia_db
+      MAIL_SERVER: mail
+      MAIL_PORT: 1025
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: pia_db
+      MYSQL_USER: pia_user
+      MYSQL_PASSWORD: pia_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: pia_user
+      PMA_PASSWORD: pia_password
+    ports:
+      - "8081:80"
+    depends_on:
+      - mysql
+
+  mail:
+    image: mailhog/mailhog
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+
+volumes:
+  mysql_data:

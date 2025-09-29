@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5" style="max-width: 400px;">
+    <div class="card shadow">
+        <div class="card-body">
+            <h2 class="card-title text-center mb-4">Register</h2>
+            <form method="post">
+                <div class="mb-3">
+                    <label for="id_email" class="form-label">Email</label>
+                    <input type="email" class="form-control" name="email" id="id_email" required>
+                </div>
+                <div class="mb-3">
+                    <label for="id_password" class="form-label">Password</label>
+                    <input type="password" class="form-control" name="password" id="id_password" required>
+                </div>
+                <div class="mb-3">
+                    <label for="id_role" class="form-label">Register as</label>
+                    <select class="form-select" name="role" id="id_role" required onchange="toggleLanguages()">
+                        <option value="">Select role</option>
+                        <option value="customer">Customer</option>
+                        <option value="translator">Translator</option>
+                    </select>
+                </div>
+                <div class="mb-3" id="languages-container" style="display:none;">
+                    <label for="id_languages" class="form-label">Languages</label>
+                    <select class="form-select" name="languages" id="id_languages" multiple>
+                        <option value="en">English</option>
+                        <option value="cz">Czech</option>
+                        <option value="sk">Slovak</option>
+                        {% for lang in languages %}
+                            <option value="{{ lang.code }}">{{ lang.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-text">Hold Ctrl (Windows) or Cmd (Mac) to select multiple languages.</div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Register</button>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+function toggleLanguages() {
+    var role = document.getElementById('id_role').value;
+    var langDiv = document.getElementById('languages-container');
+    langDiv.style.display = (role === 'translator') ? 'block' : 'none';
+}
+</script>
+{% endblock %}
