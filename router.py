@@ -1,32 +1,22 @@
-from flask import render_template, redirect, url_for, Blueprint, request
+from flask import render_template, redirect, url_for, Blueprint, request, session
 
 app_bp = Blueprint('app_bp', __name__)
 
 @app_bp.route('/')
 def home():
-    return redirect(url_for('app_bp.login'))
+    if 'user' not in session:
+        return redirect(url_for('auth_bp.login'))
 
-@app_bp.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-
-        print(f"Email: {email}, Password: {password}", flush=True)
-
-    return render_template('auth/login.html')
-
-@app_bp.route('/register', methods=['GET', 'POST'])
-def register():
-    if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-        role = request.form.get('role')
-        languages = request.form.getlist('languages')
-
-        print(f"Email: {email}, Password: {password}, Role: {role}, Languages: {languages}", flush=True)
-
-    return render_template('auth/register.html')
+    # check user role and redirect accordingly
+    user = session['user']
+    if user.get('role') == 'customer':
+        return redirect(url_for('app_bp.customer'))
+    elif user.get('role') == 'translator':
+        return redirect(url_for('app_bp.translator'))
+    elif user.get('role') == 'administrator':
+        return redirect(url_for('app_bp.administrator'))
+    else:
+        return "Unknown role", 403
 
 @app_bp.route('/customer')
 def customer():
