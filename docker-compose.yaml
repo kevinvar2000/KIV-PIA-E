@@ -2,7 +2,7 @@ services:
   server:
     build: .
     volumes:
-      - /:/app
+      - .:/app
     environment:
       FLASK_ENV: development
       FLASK_DEBUG: 1
