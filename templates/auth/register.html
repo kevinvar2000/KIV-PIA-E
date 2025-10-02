@@ -7,6 +7,10 @@
             <h2 class="card-title text-center mb-4">Register</h2>
             <form method="post">
                 <div class="mb-3">
+                    <label for="id_name" class="form-label">Name</label>
+                    <input type="text" class="form-control" name="name" id="id_name" required>
+                </div>
+                <div class="mb-3">
                     <label for="id_email" class="form-label">Email</label>
                     <input type="email" class="form-control" name="email" id="id_email" required>
                 </div>
@@ -22,28 +26,29 @@
                         <option value="translator">Translator</option>
                     </select>
                 </div>
+
                 <div class="mb-3" id="languages-container" style="display:none;">
-                    <label for="id_languages" class="form-label">Languages</label>
-                    <select class="form-select" name="languages" id="id_languages" multiple>
-                        <option value="en">English</option>
-                        <option value="cz">Czech</option>
-                        <option value="sk">Slovak</option>
-                        {% for lang in languages %}
-                            <option value="{{ lang.code }}">{{ lang.name }}</option>
-                        {% endfor %}
-                    </select>
-                    <div class="form-text">Hold Ctrl (Windows) or Cmd (Mac) to select multiple languages.</div>
+                <label for="id_languages" class="form-label">Languages</label>
+                <select class="selectpicker form-control" 
+                        name="languages" 
+                        id="id_languages" 
+                        multiple 
+                        data-live-search="true" 
+                        data-actions-box="true"
+                        data-width="100%">
+                    {% for lang_code, lang_name in languages %}
+                    <option value="{{ lang_code }}">{{ lang_name }}</option>
+                    {% endfor %}
+                </select>
+                <div class="form-text" id="selected-languages-text"></div>
                 </div>
                 <button type="submit" class="btn btn-primary w-100">Register</button>
             </form>
         </div>
     </div>
 </div>
-<script>
-function toggleLanguages() {
-    var role = document.getElementById('id_role').value;
-    var langDiv = document.getElementById('languages-container');
-    langDiv.style.display = (role === 'translator') ? 'block' : 'none';
-}
-</script>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/helper.js') }}"></script>
 {% endblock %}
