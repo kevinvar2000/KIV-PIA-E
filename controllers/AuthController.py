@@ -1,11 +1,15 @@
 from flask import render_template, redirect, url_for, Blueprint, request, session
 from flask_dance.contrib.google import make_google_blueprint, google
 from dotenv import load_dotenv
+from services.AuthService import AuthService
+from services.UserService import UserService
 import pycountry
 import os
 
+
 auth_bp = Blueprint('auth_bp', __name__)
 load_dotenv()
+
 
 google_bp = make_google_blueprint(
     client_id=os.getenv('GOOGLE_CLIENT_ID'),
@@ -13,6 +17,7 @@ google_bp = make_google_blueprint(
     redirect_to='auth_bp.google_login',
     scope=["openid", "https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"],
 )
+
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -22,11 +27,20 @@ def login():
 
         print(f"Name: {name}, Password: {password}", flush=True)
 
-        # TODO: implement login logic
+        user = AuthService.authenticate_user(name, password)
 
-        return redirect(url_for('app_bp.home'))
+        print(f"Authenticated user: {user}", flush=True)
+
+        if user:
+            session['user'] = {'name': user.get('name'), 'email': user.get('email'), 'role': user.get('role')}
+            print(f"User logged in: {session['user']}", flush=True)
+            return redirect(url_for('app_bp.home'))
+        else:
+            print(f"Login failed for user: {name}", flush=True)
+            return render_template('auth/login.html', error='Invalid credentials')
 
     return render_template('auth/login.html')
+
 
 @auth_bp.route('/google_login')
 def google_login():
@@ -45,6 +59,7 @@ def google_login():
     
     return redirect(url_for('app_bp.home'))
 
+
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -56,8 +71,9 @@ def register():
 
         print(f"Name: {name}, Email: {email}, Password: {password}, Role: {role}, Languages: {languages}", flush=True)
 
-        # TODO: save user to database
-        return redirect(url_for('app_bp.login'))
+        hashed_password = AuthService.hash_password(password)
+
+        AuthService.register_user(name, email, hashed_password, role, languages)
 
     langs = sorted([(lang.alpha_2, lang.name) for lang in pycountry.languages if hasattr(lang, 'alpha_2')], key=lambda x: x[1])
 
