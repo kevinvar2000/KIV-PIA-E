@@ -3,7 +3,7 @@ from flask_dance.contrib.google import make_google_blueprint, google
 from dotenv import load_dotenv
 from services.AuthService import AuthService
 from services.UserService import UserService
-import pycountry
+from bin.helper import get_supported_languages
 import os
 
 
@@ -19,31 +19,34 @@ google_bp = make_google_blueprint(
 )
 
 
-@auth_bp.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        name = request.form.get('name')
-        password = request.form.get('password')
+@auth_bp.route('/login')
+def login_page():
 
-        print(f"Name: {name}, Password: {password}", flush=True)
-
-        user = AuthService.authenticate_user(name, password)
-
-        print(f"Authenticated user: {user}", flush=True)
-
-        if user:
-            session['user'] = {'name': user.get('name'), 'email': user.get('email'), 'role': user.get('role')}
-            print(f"User logged in: {session['user']}", flush=True)
-            return redirect(url_for('app_bp.home'))
-        else:
-            print(f"Login failed for user: {name}", flush=True)
-            return render_template('auth/login.html', error='Invalid credentials')
+    if session.get('user'):
+        return redirect(url_for('app_bp.home'))
 
     return render_template('auth/login.html')
 
 
+@auth_bp.route('/api/login', methods=['POST'])
+def api_login():
+
+    data = request.get_json()
+    name = data.get('name')
+    password = data.get('password')
+
+    user = AuthService.authenticate_user(name, password)
+
+    if user:
+        session['user'] = { 'user_id': user.get('id'), 'name': user.get('name'), 'email': user.get('email'), 'role': user.get('role')}
+        return {'status': 'success', 'role': user.get('role')}, 200
+    else:
+        return {'status': 'failure'}, 401
+
+
 @auth_bp.route('/google_login')
 def google_login():
+
     if not google.authorized:
         return redirect(url_for('google.login'))
     
@@ -54,27 +57,44 @@ def google_login():
     email = user_info['email']
     name = user_info.get('name', email.split('@')[0])
 
+    user = UserService.get_user_by_email(email)
+    if not user:
+        UserService.create_user(name=name, email=email, role='user')
     session['user'] = {'name': name, 'email': email}
-    print(f"Google user info: {user_info}", flush=True)
     
     return redirect(url_for('app_bp.home'))
 
 
-@auth_bp.route('/register', methods=['GET', 'POST'])
-def register():
-    if request.method == 'POST':
-        name = request.form.get('name')
-        email = request.form.get('email')
-        password = request.form.get('password')
-        role = request.form.get('role')
-        languages = request.form.getlist('languages')
+@auth_bp.route('/register')
+def register_page():
 
-        print(f"Name: {name}, Email: {email}, Password: {password}, Role: {role}, Languages: {languages}", flush=True)
+    return render_template('auth/register.html', languages=get_supported_languages())
 
-        hashed_password = AuthService.hash_password(password)
 
-        AuthService.register_user(name, email, hashed_password, role, languages)
+@auth_bp.route('/api/register', methods=['POST'])
+def api_register():
 
-    langs = sorted([(lang.alpha_2, lang.name) for lang in pycountry.languages if hasattr(lang, 'alpha_2')], key=lambda x: x[1])
+    data = request.get_json()
+    name = data.get('name')
+    email = data.get('email')
+    password = data.get('password')
+    role = data.get('role')
+    languages = data.get('languages', [])
 
-    return render_template('auth/register.html', languages=langs)
+    hashed_password = AuthService.hash_password(password)
+
+    AuthService.register_user(name, email, hashed_password, role, languages)
+
+    return {'status': 'success'}, 201
+
+
+@auth_bp.route('/logout')
+def logout():
+    session.pop('user', None)
+    return redirect(url_for('auth_bp.login_page'))
+
+
+@auth_bp.route('/api/logout', methods=['POST'])
+def api_logout():
+    session.pop('user', None)
+    return {'status': 'success'}, 200

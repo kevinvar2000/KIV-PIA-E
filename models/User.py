@@ -13,7 +13,6 @@ class UserRole(Enum):
 
 class User:
 
-
     def __init__(self, name: str, email: str, role: UserRole):
         self.id = uuid.uuid4()
         self.name = name
@@ -35,7 +34,8 @@ class User:
             raise ValueError("Email must be a valid non-empty string.")
 
         user = cls(name, email, UserRole.CUSTOMER)
-        db.execute_query(
+        
+        result = db.execute_query(
             "INSERT INTO Users (id, name, email, password, role, created_at) VALUES (%s, %s, %s, %s, %s, %s)",
             (str(user.id), user.name, user.email, hashed_password, user.role.value, user.created_at)
         )
