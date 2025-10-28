@@ -4,28 +4,8 @@
 <div class="container mt-4">
     <h1 class="mb-4">Customer Dashboard</h1>
 
-    <!-- Create New Project -->
-    <div class="card mb-5">
-        <div class="card-header">
-            <h2 class="h5 mb-0">Create New Project</h2>
-        </div>
-        <div class="card-body">
-            <form method="post" action="/projects/create">
-                <div class="mb-3">
-                    <label for="project_name" class="form-label">Project Name:</label>
-                    <input type="text" class="form-control" id="project_name" name="project_name" required>
-                </div>
-                <div class="mb-3">
-                    <label for="description" class="form-label">Description:</label>
-                    <textarea class="form-control" id="description" name="description" required></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary">Create Project</button>
-            </form>
-        </div>
-    </div>
-
     <!-- List of Own Projects -->
-    <div class="card">
+    <div class="card mb-5">
         <div class="card-header">
             <h2 class="h5 mb-0">Your Projects</h2>
         </div>
@@ -62,5 +42,52 @@
             {% endfor %}
         </ul>
     </div>
+
+    <!-- Create New Project -->
+    <div class="card mb-5">
+        <div class="card-header">
+            <h2 class="h5 mb-0">Create New Project</h2>
+        </div>
+        <div class="card-body">
+            <form method="post" action="/api/projects" enctype="multipart/form-data">
+                
+                <div class="mb-3">
+                    <label for="project_name" class="form-label">Project Name:</label>
+                    <input type="text" class="form-control" id="project_name" name="project_name" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description:</label>
+                    <textarea class="form-control" id="description" name="description" required></textarea>
+                </div>
+                
+                <div class="mb-3" id="target-language-container">
+                    <label for="id_target_language" class="form-label">Target Language</label>
+                    <select
+                        class="selectpicker form-control"
+                        name="target_language"
+                        id="id_target_language"
+                        data-live-search="true"
+                        data-width="100%"
+                        title="Choose target language"
+                        required>
+                        {% for lang_code, lang_name in languages %}
+                        <option value="{{ lang_code }}">{{ lang_name }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-text" id="target_language_help">Select the target language to be translated to.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="source_file" class="form-label">Source File:</label>
+                    <input type="file" class="form-control bg-dark text-white" id="source_file" name="source_file" accept=".txt,.doc,.docx,.pdf,.rtf,.odt,.html,.md" aria-describedby="source_file_help">
+                    <div id="source_file_help" class="form-text">Max file size: {{ max_file_size_mb or 10 }} MB.</div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Create Project</button>
+            </form>
+        </div>
+    </div>
+
 </div>
 {% endblock %}
