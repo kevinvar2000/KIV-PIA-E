@@ -1,6 +1,7 @@
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, redirect, render_template, request, jsonify, session, url_for
 from services.AuthService import AuthService
 from services.UserService import UserService
+from services.ProjectService import ProjectService
 from bin.helper import get_supported_languages, MAX_FILE_SIZE_MB
 
 
@@ -10,12 +11,11 @@ user_bp = Blueprint('user_bp', __name__)
 @user_bp.route('/users', methods=['POST'])
 def create_user():
     """API endpoint to create a new user."""
-    data = request.json
-    name = data.get('name')
-    email = data.get('email')
-    password = data.get('password')
-    role = data.get('role')
-    languages = data.get('languages', [])
+    name = request.form.get('name')
+    email = request.form.get('email')
+    password = request.form.get('password')
+    role = request.form.get('role')
+    languages = request.form.get('languages', [])
 
     try:
         hashed_password = AuthService.hash_password(password)
@@ -28,9 +28,7 @@ def create_user():
 @user_bp.route('/users', methods=['GET'])
 def get_all_users():
     """API endpoint to get all users."""
-
     users = UserService.get_all_users()
-
     return jsonify({'users': users}), 200
 
 
@@ -42,20 +40,46 @@ def get_user(name):
     if not user_data:
         return jsonify({'error': 'User not found.'}), 404
 
-    user_info = {
-        'id': str(user_data.id),
-        'name': user_data.name,
-        'email': user_data.email,
-        'role': user_data.role.value,
-        'created_at': user_data.created_at.isoformat(),
-        'languages': user_data.get_languages()
-    }
-
-    return jsonify({'user': user_info}), 200
+    return jsonify({'user': user_data}), 200
 
 
 @user_bp.route('/customer', methods=['GET'])
 def customer():
     """Customer dashboard and project creation"""
 
-    return render_template('pages/customer.html', max_file_size_mb=MAX_FILE_SIZE_MB, languages=get_supported_languages())
+    user_session = session.get('user')
+    if not user_session:
+        return redirect(url_for('auth_bp.login_page'))
+    
+    print("User session found:", user_session, flush=True)
+
+    user_data = UserService.get_user_by_name(user_session['name'])
+    
+    print("Rendering customer dashboard for user:", user_data, flush=True)
+
+    projects = ProjectService.get_projects_by_user_id(user_data['id'])
+
+    print(f"Projects for customer {user_data['id']}: {projects}", flush=True)
+
+    return render_template('pages/customer.html', max_file_size_mb=MAX_FILE_SIZE_MB, projects=projects)
+
+
+@user_bp.route('/translator', methods=['GET'])
+def translator():
+    """Translator dashboard"""
+
+    user_session = session.get('user')
+    if not user_session:
+        return redirect(url_for('auth_bp.login_page'))
+    
+    print("User session found:", user_session, flush=True)
+
+    user_data = UserService.get_user_by_name(user_session['name'])
+    
+    print("Rendering translator dashboard for user:", user_data, flush=True)
+
+    projects = ProjectService.get_projects_by_user_id(user_data['id'])
+
+    print(f"Projects for translator {user_data['id']}: {projects}", flush=True)
+
+    return render_template('pages/translator.html', projects=projects)

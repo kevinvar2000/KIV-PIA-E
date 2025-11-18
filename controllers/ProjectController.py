@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify, session
+from models.Project import ProjectState
 from services.ProjectService import ProjectService
 
 proj_bp = Blueprint('proj_bp', __name__)
@@ -16,6 +17,13 @@ def create_project():
 
     try:
         project = ProjectService.create_project(customer_id, project_name, description, target_language, source_file)
+
+        if not project:
+            return jsonify({'error': 'Project creation failed.'}), 500
+        
+        if project.state == ProjectState.CLOSED:
+            return jsonify({'error': 'No translators available. Project closed.'}), 400
+
         return jsonify({'message': 'Project created successfully.'}), 201
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
@@ -26,8 +34,7 @@ def get_all_projects():
     """API endpoint to get all projects."""
     try:
         projects = ProjectService.get_all_projects()
-        projects_data = [{'id': p.id, 'name': p.name, 'description': p.description, 'status': p.status} for p in projects]
-        return jsonify({'projects': projects_data}), 200
+        return jsonify({'projects': projects}), 200
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
 

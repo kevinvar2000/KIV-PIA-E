@@ -1,7 +1,8 @@
 import os
-from models.Project import Project
+from models.Project import Project, ProjectState
 from werkzeug.datastructures import FileStorage as _WSFileStorage
 from bin.helper import MAX_FILE_SIZE_MB
+from services.UserService import UserService
 
 class ProjectService:
 
@@ -27,23 +28,42 @@ class ProjectService:
         if source_file is None:
             raise ValueError("Source file is required.")
         
-        filename = source_file.filename
+        filename = source_file.filename + "_" + str(customer_id)
         file_path = os.path.join(ProjectService.UPLOAD_FOLDER, filename)
 
         source_file.save(file_path)
 
         project = Project.create_project(customer_id, project_name, description, target_language, file_path)
-        return project
-    
-    @staticmethod
-    def get_projects_by_customer_id(customer_id: str) -> list:
-        """Retrieve all projects for a given customer ID."""
-        if not customer_id or not isinstance(customer_id, str):
-            raise ValueError("Customer ID must be a valid non-empty string.")
 
-        projects = Project.get_by_customer_id(customer_id)
+        translators = UserService.get_translators_by_language(target_language)
+        if translators:
+            translator = translators[0]
+            print(f"Assigning translator {translator.id} to project {project.id}", flush=True)
+            Project.assign_translator(project.id, translator.id)
+
+            # UserService.notify_translator(translator.id, project.id)
+        else:
+            print(f"No translators available for language: {target_language}", flush=True)
+            project.update_status(project.id, ProjectState.CLOSED.value)
+
+        return project
+
+    @staticmethod
+    def get_all_projects() -> list:
+        """Retrieve all projects."""
+        projects = Project.get_all()
+        projects_dict = [ProjectService.project_to_dict(p) for p in projects]
+        return projects_dict
+
+    @staticmethod
+    def get_projects_by_user_id(user_id: str) -> list:
+        """Retrieve all projects for a given user ID."""
+        if not user_id or not isinstance(user_id, str):
+            raise ValueError("User ID must be a valid non-empty string.")
+
+        projects = Project.get_by_user_id(user_id)
         return projects
-    
+
     @staticmethod
     def get_project_by_id(project_id: str) -> Project:
         """Retrieve a project by its ID."""
@@ -67,11 +87,23 @@ class ProjectService:
     @staticmethod
     def assign_translator_to_project(project_id: str, translator_id: str) -> None:
         """Assign a translator to a project."""
+
         if not project_id or not isinstance(project_id, str):
             raise ValueError("Project ID must be a valid non-empty string.")
 
         if not translator_id or not isinstance(translator_id, str):
             raise ValueError("Translator ID must be a valid non-empty string.")
-        
+
         Project.assign_translator(project_id, translator_id)
-    
+
+    @staticmethod
+    def project_to_dict(project: Project) -> dict:
+        """Convert a Project object to a dictionary representation."""
+        return {
+            'id': str(project.id),
+            'customer_id': str(project.customer_id),
+            'translator_id': str(project.translator_id) if project.translator_id else None,
+            'language': project.language,
+            'state': project.state.value,
+            'created_at': project.created_at.isoformat()
+        }

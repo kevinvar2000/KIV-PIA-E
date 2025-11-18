@@ -5,10 +5,19 @@ import uuid
 
 
 class UserRole(Enum):
-
     ADMINISTRATOR = "administrator"
     CUSTOMER = "customer"
     TRANSLATOR = "translator"
+
+    @classmethod
+    def from_string(cls, value: str):
+        if not isinstance(value, str):
+            raise TypeError("Role value must be a string.")
+        normalized = value.strip().lower()
+        for role in cls:
+            if role.value == normalized or role.name.lower() == normalized:
+                return role
+        raise ValueError(f"Unknown user role: {value}")
 
 
 class User:
@@ -73,8 +82,6 @@ class User:
             (name,)
         )
         
-        print(f"User query result for name '{name}': {result}", flush=True)
-
         return result[0] if result else None
 
     @property
@@ -93,3 +100,76 @@ class User:
                 "INSERT INTO Languages (user_id, language) VALUES (%s, %s)",
                 (str(self.id), lang)
             )
+
+    def get_languages(self):
+        result = db.execute_query(
+            "SELECT language FROM Languages WHERE user_id = %s",
+            (str(self.id),)
+        )
+
+        languages = [row['language'] for row in result]
+        return languages
+    
+    @classmethod
+    def get_all_users(cls):
+        result = db.execute_query(
+            "SELECT id, name, email, role, created_at FROM Users"
+        )
+
+        users = []
+        for row in result:
+            user = cls(
+                name=row['name'],
+                email=row['email'],
+                role=UserRole.from_string(row['role'])
+            )
+            user.id = row['id']
+            user.created_at = row['created_at']
+            users.append(user)
+
+        return users
+    
+
+    @classmethod
+    def get_user_by_id(cls, user_id: str):
+        result = db.execute_query(
+            "SELECT id, name, email, password, role, created_at FROM Users WHERE id = %s",
+            (user_id,)
+        )
+
+        if not result:
+            return None
+
+        row = result[0]
+        user = cls(
+            name=row['name'],
+            email=row['email'],
+            role=UserRole.from_string(row['role'])
+        )
+        user.id = row['id']
+        user.created_at = row['created_at']
+
+        return user
+
+
+    @classmethod
+    def get_translators_by_language(cls, language_code: str) -> list:
+        result = db.execute_query(
+            "SELECT u.id, u.name, u.email, u.role, u.created_at FROM Users u "
+            "JOIN Languages l ON u.id = l.user_id "
+            "WHERE l.language = %s AND u.role = %s",
+            (language_code, UserRole.TRANSLATOR.value)
+        )
+
+        translators = []
+        for row in result:
+            translator = cls(
+                name=row['name'],
+                email=row['email'],
+                role=UserRole.from_string(row['role'])
+            )
+            translator.id = row['id']
+            translator.created_at = row['created_at']
+            translators.append(translator)
+
+        return translators

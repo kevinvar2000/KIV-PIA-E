@@ -33,3 +33,46 @@ class UserService:
             return None
 
         return user_data
+
+    
+    @staticmethod
+    def get_all_users():
+
+        users = User.get_all_users()
+        users_dict = [UserService.user_to_dict(user) for user in users]
+
+        return users_dict
+
+
+    @staticmethod
+    def get_user_by_id(user_id: str) -> User:
+
+        if not user_id or not isinstance(user_id, str):
+            raise ValueError("User ID must be a valid non-empty string.")
+
+        user = User.get_user_by_id(user_id)
+
+        return user
+
+
+    @staticmethod
+    def get_translators_by_language(language_code: str) -> list:
+        """Retrieve all translators proficient in a given language."""
+        if not language_code or not isinstance(language_code, str):
+            raise ValueError("Language code must be a valid non-empty string.")
+
+        translators = User.get_translators_by_language(language_code)
+
+        return translators
+    
+    @staticmethod
+    def user_to_dict(user: User) -> dict:
+        """Convert a User object to a dictionary representation."""
+        return {
+            'id': str(user.id),
+            'name': user.name,
+            'email': user.email,
+            'role': user.role.value,
+            'created_at': user.created_at.isoformat(),
+            'languages': user.get_languages()
+        }
