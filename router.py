@@ -36,9 +36,3 @@ def home():
 def administrator():
     # Administrator page logic here
     return render_template('pages/administrator.html')
-
-
-@app_bp.route('/translator')
-def translator():
-    # Translator page logic here
-    return render_template('pages/translator.html')
