@@ -57,11 +57,11 @@ def customer():
     
     print("Rendering customer dashboard for user:", user_data, flush=True)
 
-    projects = ProjectService.get_projects_by_user_id(user_data['id'])
+    projects = ProjectService.get_projects_by_user_id(user_data['id'], user_data['role'])
 
     print(f"Projects for customer {user_data['id']}: {projects}", flush=True)
 
-    return render_template('pages/customer.html', max_file_size_mb=MAX_FILE_SIZE_MB, projects=projects)
+    return render_template('pages/customer.html', max_file_size_mb=MAX_FILE_SIZE_MB, projects=projects, languages=get_supported_languages())
 
 
 @user_bp.route('/translator', methods=['GET'])
@@ -78,8 +78,8 @@ def translator():
     
     print("Rendering translator dashboard for user:", user_data, flush=True)
 
-    projects = ProjectService.get_projects_by_user_id(user_data['id'])
+    projects = ProjectService.get_projects_by_user_id(user_data['id'], user_data['role'])
 
-    print(f"Projects for translator {user_data['id']}: {projects}", flush=True)
+    ProjectService.check_feedbacks(projects)
 
     return render_template('pages/translator.html', projects=projects)

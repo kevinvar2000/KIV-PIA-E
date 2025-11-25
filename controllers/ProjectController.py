@@ -1,4 +1,5 @@
-from flask import Blueprint, request, jsonify, session
+import os
+from flask import Blueprint, request, jsonify, send_file, session
 from models.Project import ProjectState
 from services.ProjectService import ProjectService
 
@@ -89,3 +90,62 @@ def assign_translator(project_id):
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
     
+
+@proj_bp.route('/project/<project_id>/accept', methods=['POST'])
+def accept_translation(project_id):
+    """API endpoint for customer to accept a translation."""
+    try:
+        ProjectService.accept_translation(project_id)
+        return jsonify({'message': 'Translation accepted successfully.'}), 200
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+
+
+@proj_bp.route('/project/<project_id>/reject', methods=['POST'])
+def reject_translation(project_id):
+    """API endpoint for customer to reject a translation."""
+    feedback = request.form.get('feedback')
+
+    try:
+        ProjectService.reject_translation(project_id, feedback)
+        return jsonify({'message': 'Translation rejected successfully.'}), 200
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+
+
+@proj_bp.route('/project/<project_id>/download/original', methods=['GET'])
+def download_original_file(project_id):
+    """API endpoint to download the original file of a project."""
+
+    try:
+        file = ProjectService.get_original_file(project_id)
+        return send_file(file,
+                        as_attachment=True,
+                        download_name=os.path.basename(file))
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+
+
+@proj_bp.route('/project/<project_id>/download/translation', methods=['GET'])
+def download_translated_file(project_id):
+    """API endpoint to download the translated file of a project."""
+
+    try:
+        file = ProjectService.get_translated_file(project_id)
+        return send_file(file,
+                         as_attachment=True,
+                         download_name=os.path.basename(file))
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+
+
+@proj_bp.route('/project/<project_id>/upload', methods=['POST'])
+def upload_translated_file(project_id):
+    """API endpoint for translator to upload the translated file."""
+    translated_file = request.files.get('translated_file')
+
+    try:
+        ProjectService.save_translated_file(project_id, translated_file)
+        return jsonify({'message': 'Translated file uploaded successfully.'}), 200
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400

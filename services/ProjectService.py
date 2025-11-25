@@ -6,9 +6,14 @@ from services.UserService import UserService
 
 class ProjectService:
 
-    UPLOAD_FOLDER = 'uploads/'
-    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    PROJECTS_FOLDER = 'projects/'
+    ORIGINAL_FILES_FOLDER = os.path.join(PROJECTS_FOLDER, 'original_files/')
+    TRANSLATED_FILES_FOLDER = os.path.join(PROJECTS_FOLDER, 'translated_files/')
+    FILENAME_SEPARATOR = '_'
 
+    os.makedirs(PROJECTS_FOLDER, exist_ok=True)
+    os.makedirs(ORIGINAL_FILES_FOLDER, exist_ok=True)
+    os.makedirs(TRANSLATED_FILES_FOLDER, exist_ok=True)
 
     @staticmethod
     def create_project(customer_id: str, project_name: str, description: str, target_language: str, source_file: _WSFileStorage) -> Project:
@@ -28,8 +33,8 @@ class ProjectService:
         if source_file is None:
             raise ValueError("Source file is required.")
         
-        filename = source_file.filename + "_" + str(customer_id)
-        file_path = os.path.join(ProjectService.UPLOAD_FOLDER, filename)
+        filename = str(customer_id) + ProjectService.FILENAME_SEPARATOR + source_file.filename
+        file_path = os.path.join(ProjectService.ORIGINAL_FILES_FOLDER, filename)
 
         source_file.save(file_path)
 
@@ -56,12 +61,21 @@ class ProjectService:
         return projects_dict
 
     @staticmethod
-    def get_projects_by_user_id(user_id: str) -> list:
+    def get_projects_by_user_id(user_id: str, role: str) -> list:
         """Retrieve all projects for a given user ID."""
         if not user_id or not isinstance(user_id, str):
             raise ValueError("User ID must be a valid non-empty string.")
 
-        projects = Project.get_by_user_id(user_id)
+        if not role or not isinstance(role, str):
+            raise ValueError("Role must be a valid non-empty string.")
+
+        if role == 'CUSTOMER':
+            projects = Project.get_by_user_id(user_id, "customerId")
+        elif role == 'TRANSLATOR':
+            projects = Project.get_by_user_id(user_id, "translatorId")
+        else:
+            raise ValueError("Invalid role specified.")
+
         return projects
 
     @staticmethod
@@ -107,3 +121,80 @@ class ProjectService:
             'state': project.state.value,
             'created_at': project.created_at.isoformat()
         }
+
+
+    @staticmethod
+    def accept_translation(project_id: str) -> None:
+        """Accept the translation for a project."""
+        if not project_id or not isinstance(project_id, str):
+            raise ValueError("Project ID must be a valid non-empty string.")
+
+        Project.update_status(project_id, ProjectState.CLOSED.value)    # TODO: Closed or Completed?
+
+
+    @staticmethod
+    def reject_translation(project_id: str, feedback: str) -> None:
+        """Reject the translation for a project with feedback."""
+        if not project_id or not isinstance(project_id, str):
+            raise ValueError("Project ID must be a valid non-empty string.")
+
+        if not feedback or not isinstance(feedback, str):
+            raise ValueError("Feedback must be a valid non-empty string.")
+
+        Project.update_status(project_id, ProjectState.REJECTED.value)
+        Project.save_feedback(project_id, feedback)
+
+
+    @staticmethod
+    def get_original_file(project_id: str) -> str:
+        if not project_id or not isinstance(project_id, str):
+            raise ValueError("Project ID must be a valid non-empty string.")
+        
+        filename = Project.get_original_file(project_id)
+        if not filename:
+            raise ValueError("Original file not found.")
+
+        return filename
+
+
+    @staticmethod
+    def get_translated_file(project_id: str) -> str:
+        if not project_id or not isinstance(project_id, str):
+            raise ValueError("Project ID must be a valid non-empty string.")
+        
+        filename = Project.get_translated_file(project_id)
+        if not filename:
+            raise ValueError("Translated file not found.")
+
+        return filename
+
+
+    @staticmethod
+    def save_translated_file(project_id: str, translated_file: _WSFileStorage) -> None:
+        """Save the translated file for a project."""
+        if not project_id or not isinstance(project_id, str):
+            raise ValueError("Project ID must be a valid non-empty string.")
+
+        if translated_file is None:
+            raise ValueError("Translated file is required.")
+        
+        filename = str(project_id) + ProjectService.FILENAME_SEPARATOR + translated_file.filename
+        file_path = os.path.join(ProjectService.TRANSLATED_FILES_FOLDER, filename)
+
+        translated_file.save(file_path)
+
+        project = Project.get_by_id(project_id)
+        if not project:
+            raise ValueError("Project not found.")
+
+        Project.save_translated_file(project_id, file_path)
+        Project.update_status(project_id, ProjectState.COMPLETED.value)
+
+
+    @staticmethod
+    def check_feedbacks(projects: list) -> None:
+        """Check projects for rejected status and print feedbacks."""
+        for project in projects:
+            if project.state == ProjectState.REJECTED:
+                feedback = Project.get_feedback(project.id)
+                project.feedback = feedback
