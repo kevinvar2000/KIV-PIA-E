@@ -28,8 +28,7 @@ class DatabaseConnector:
 
     def execute_query(self, query, params=None):
         if not self.connection:
-            print("No connection established.")
-            return None
+            self.connect()
         cursor = self.connection.cursor(dictionary=True)
         try:
             cursor.execute(query, params)
