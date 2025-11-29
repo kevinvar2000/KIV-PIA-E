@@ -22,30 +22,32 @@
             <tbody>
                 {% for project in projects %}
                 <tr>
-                <td><strong>{{ project.original_file }}</strong></td>
-                {% set state = project.state.name|lower %}
-                {% set badge_class = 'bg-info' if state == 'assigned'
-                                   else 'bg-success' if state == 'completed'
-                                   else 'bg-danger' if state == 'rejected'
-                                   else 'bg-dark' if state == 'closed'
-                                   else 'bg-secondary' %}
-                <td><span class="badge {{ badge_class }}">{{ project.state.name|capitalize }}</span></td>
-                <td>{% if project.language %}{{ project.language }}{% else %}-{% endif %}</td>
-                <td>{% if project.created_at %}{{ project.created_at }}{% else %}-{% endif %}</td>
-                <td class="text-end">
-                    <a class="btn btn-outline-primary btn-sm" href="/api/project/{{ project.id }}/download/original">Original</a>
-                        <form method="POST" action="/api/project/{{ project.id }}/upload" enctype="multipart/form-data" class="d-inline">
-                            <input type="file" name="translated_file" class="d-none" id="upload-input-{{ project.id }}" onchange="this.form.submit()">
-                            <button type="button" class="btn btn-success btn-sm ms-1" onclick="document.getElementById('upload-input-{{ project.id }}').click();">
-                                Upload
-                            </button>
-                        </form>
-                    {% if project.feedback %}
-                    <button type="button" class="btn btn-warning btn-sm ms-1" data-bs-toggle="collapse" data-bs-target="#feedback-{{ project.id }}">
-                        Feedback
-                    </button>
-                    {% endif %}
-                </td>
+                    <td><strong>{{ project.original_file }}</strong></td>
+                    {% set state = project.state.name|lower %}
+                    {% set badge_class = 'bg-info' if state == 'assigned'
+                                    else 'bg-success' if state == 'completed'
+                                    else 'bg-danger' if state == 'rejected'
+                                    else 'bg-dark' if state == 'closed'
+                                    else 'bg-secondary' %}
+                    <td><span class="badge {{ badge_class }}">{{ project.state.name|capitalize }}</span></td>
+                    <td>{% if project.language %}{{ project.language }}{% else %}-{% endif %}</td>
+                    <td>{% if project.created_at %}{{ project.created_at }}{% else %}-{% endif %}</td>
+                    <td class="text-end">
+                        <div class="d-flex flex-wrap align-items-end gap-2">
+                            
+                            <button class="btn btn-outline-primary btn-sm" onclick="downloadOriginal('{{ project.id }}')">Original</button>
+                            
+                            {% if state != 'completed' %}
+                            <input type="file" class="d-none" id="upload-input-{{ project.id }}" accept=".txt,.doc,.docx,.pdf,.rtf,.odt,.html,.md" onchange="uploadTranslatedFile('{{ project.id }}')">
+                            <button type="button" class="btn btn-success btn-sm" onclick="document.getElementById('upload-input-{{ project.id }}').click();">Upload</button>
+                            {% endif %}
+                            
+                            {% if project.feedback %}
+                            <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="collapse" data-bs-target="#feedback-{{ project.id }}">Feedback</button>
+                            {% endif %}
+
+                        </div>
+                    </td>
                 </tr>
                 {% if project.feedback %}
                 <tr>
@@ -59,23 +61,6 @@
                     </td>
                 </tr>
                 {% endif %}
-                {% if not project.translated_file %}
-                <tr>
-                <td colspan="6" class="p-0 border-0">
-                    <div class="collapse" id="upload-form-{{ project.id }}">
-                    <div class="p-3">
-                        <form action="" method="post" enctype="multipart/form-data">
-                        <div class="mb-2">
-                            <label for="translated-{{ project.id }}" class="form-label">Translated File</label>
-                            <input type="file" id="translated-{{ project.id }}" name="translated_file" class="form-control" accept=".txt,.doc,.docx,.pdf,.rtf,.odt,.html,.md" required>
-                        </div>
-                        <button type="submit" class="btn btn-success btn-sm">Submit Translation</button>
-                        </form>
-                    </div>
-                    </div>
-                </td>
-                </tr>
-                {% endif %}
                 {% else %}
                 <tr>
                 <td colspan="6">No assigned projects.</td>
@@ -86,4 +71,9 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/alert.js') }}"></script>
+<script src="{{ url_for('static', filename='js/project.js') }}"></script>
 {% endblock %}

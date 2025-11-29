@@ -24,25 +24,23 @@
                     <span class="badge bg-info text-dark">{{ project.language }}</span>
 
                     <div class="ms-auto d-flex align-items-center gap-2">
-                        <a class="btn btn-outline-primary btn-sm" href="/api/project/{{ project.id }}/download/original">Original</a>
+                        <button class="btn btn-outline-primary btn-sm" onclick="downloadOriginal('{{ project.id }}')">Original</button>
                         {% if project.translated_file %}
-                        <a class="btn btn-outline-success btn-sm" href="/api/project/{{ project.id }}/download/translation">Translation</a>
+                        <button class="btn btn-outline-success btn-sm" onclick="downloadTranslation('{{ project.id }}')">Translation</button>
                         {% endif %}
                         {% if project.state.name == 'COMPLETED' %}
-                        <form method="post" action="/api/project/{{ project.id }}/accept" class="d-inline">
-                            <button type="submit" class="btn btn-success btn-sm">Accept</button>
-                        </form>
-                        <button class="btn btn-danger btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#reject-form-{{ loop.index }}">Reject</button>
+                            <button class="btn btn-success btn-sm" onclick="acceptProject('{{ project.id }}')">Accept</button>
+                            <button class="btn btn-danger btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#reject-form-{{ project.id }}">Reject</button>
                         {% endif %}
                     </div>
                 </div>
                 {% if project.state.name == 'COMPLETED' %}
-                <div class="collapse mt-2" id="reject-form-{{ loop.index }}">
-                    <form method="post" action="/api/project/{{ project.id }}/reject" class="border rounded p-2 bg-dark">
-                        <label for="feedback-{{ loop.index }}" class="form-label mb-1">Feedback for Translator</label>
-                        <textarea class="form-control form-control-sm mb-2" id="feedback-{{ loop.index }}" name="feedback" rows="3" required></textarea>
-                        <button type="submit" class="btn btn-warning btn-sm">Submit Rejection</button>
-                    </form>
+                <div class="collapse mt-2 " id="reject-form-{{ project.id }}">
+                    <div class="border rounded p-2 bg-dark">
+                        <label for="feedback-{{ project.id }}" class="form-label mb-1">Feedback for Translator</label>
+                        <textarea class="form-control form-control-sm mb-2" id="feedback-{{ project.id }}" rows="3" required></textarea>
+                        <button class="btn btn-warning btn-sm" onclick="rejectProject('{{ project.id }}')">Submit Rejection</button>
+                    </div>
                 </div>
                 {% endif %}
             </li>
@@ -58,28 +56,26 @@
             <h2 class="h5 mb-0">Create New Project</h2>
         </div>
         <div class="card-body">
-            <form method="post" action="/api/projects" enctype="multipart/form-data">
-                
+            <form id="createProjectForm">
+                            
                 <div class="mb-3">
                     <label for="project_name" class="form-label">Project Name:</label>
-                    <input type="text" class="form-control" id="project_name" name="project_name" required>
+                    <input type="text" class="form-control" id="project_name" required>
                 </div>
                 
                 <div class="mb-3">
                     <label for="description" class="form-label">Description:</label>
-                    <textarea class="form-control" id="description" name="description" required></textarea>
+                    <textarea class="form-control" id="description" required></textarea>
                 </div>
                 
                 <div class="mb-3" id="target-language-container">
                     <label for="id_target_language" class="form-label">Target Language</label>
-                    <select
-                        class="selectpicker form-control"
-                        name="target_language"
-                        id="id_target_language"
-                        data-live-search="true"
-                        data-width="100%"
-                        title="Choose target language"
-                        required>
+                    <select class="selectpicker form-control"
+                            id="id_target_language"
+                            data-live-search="true"
+                            data-width="100%"
+                            title="Choose target language"
+                            required>
                         {% for lang_code, lang_name in languages %}
                         <option value="{{ lang_code }}">{{ lang_name }}</option>
                         {% endfor %}
@@ -89,14 +85,21 @@
 
                 <div class="mb-3">
                     <label for="source_file" class="form-label">Source File:</label>
-                    <input type="file" class="form-control bg-dark text-white" id="source_file" name="source_file" accept=".txt,.doc,.docx,.pdf,.rtf,.odt,.html,.md" aria-describedby="source_file_help">
+                    <input type="file" class="form-control bg-dark text-white"
+                        id="source_file"
+                        accept=".txt,.doc,.docx,.pdf,.rtf,.odt,.html,.md">
                     <div id="source_file_help" class="form-text">Max file size: {{ max_file_size_mb or 10 }} MB.</div>
                 </div>
-                
+
                 <button type="submit" class="btn btn-primary">Create Project</button>
             </form>
         </div>
     </div>
 
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/alert.js') }}"></script>
+<script src="{{ url_for('static', filename='js/project.js') }}"></script>
 {% endblock %}

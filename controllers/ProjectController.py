@@ -1,4 +1,3 @@
-import os
 from flask import Blueprint, request, jsonify, send_file, session
 from models.Project import ProjectState
 from services.ProjectService import ProjectService
@@ -13,7 +12,7 @@ def create_project():
     customer_id = request.form.get('customer_id') if 'customer_id' in request.form else session.get('user', {}).get('user_id')
     project_name = request.form.get('project_name')
     description = request.form.get('description')
-    target_language = request.form.get('target_language')
+    target_language = request.form.get('language')
     source_file = request.files.get('source_file')
 
     try:
@@ -104,7 +103,7 @@ def accept_translation(project_id):
 @proj_bp.route('/project/<project_id>/reject', methods=['POST'])
 def reject_translation(project_id):
     """API endpoint for customer to reject a translation."""
-    feedback = request.form.get('feedback')
+    feedback = request.json.get('feedback')
 
     try:
         ProjectService.reject_translation(project_id, feedback)
@@ -118,10 +117,10 @@ def download_original_file(project_id):
     """API endpoint to download the original file of a project."""
 
     try:
-        file = ProjectService.get_original_file(project_id)
+        file, filename = ProjectService.get_original_file(project_id)
         return send_file(file,
                         as_attachment=True,
-                        download_name=os.path.basename(file))
+                        download_name=filename)
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
 
@@ -131,10 +130,10 @@ def download_translated_file(project_id):
     """API endpoint to download the translated file of a project."""
 
     try:
-        file = ProjectService.get_translated_file(project_id)
+        file, filename = ProjectService.get_translated_file(project_id)
         return send_file(file,
                          as_attachment=True,
-                         download_name=os.path.basename(file))
+                         download_name=filename)
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
 

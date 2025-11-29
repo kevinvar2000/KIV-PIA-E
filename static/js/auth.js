@@ -58,16 +58,15 @@ $(document).ready(function() {
             contentType: "application/json",
             data: JSON.stringify(userData),
             success: function(response) {
-                alert("Registration successful!");
+                showAlert("success", "Registration successful. Redirecting to login...");
                 window.location.href = "/auth/login";
             },
             error: function(xhr) {
-                // safer error handling
-                let msg = "Registration failed";
+                let msg = "Registration failed.";
                 if (xhr.responseJSON && xhr.responseJSON.error) {
                     msg = xhr.responseJSON.error;
                 }
-                alert(msg);
+                showAlert("error", msg);
             }
         });
     });
@@ -77,12 +76,9 @@ $(document).ready(function() {
         e.preventDefault();
 
         const loginData = {
-            // email: $("#email").val(),
             name: $("#id_name").val(),
             password: $("#id_password").val()
         };
-
-        console.log("Login data:", loginData);
 
         $.ajax({
             url: "/auth/api/login",
@@ -90,25 +86,22 @@ $(document).ready(function() {
             contentType: "application/json",
             data: JSON.stringify(loginData),
             success: function(response) {
-                alert("Welcome back!");
-                const role = response.role || "CUSTOMER";
+                showAlert("success", "Login successful.");
+                const role = (response.role || "CUSTOMER").toUpperCase();
                 if (role === "TRANSLATOR") {
                     window.location.href = "/api/translator";
-                    return;
                 } else if (role === "ADMINISTRATOR") {
                     window.location.href = "/api/administrator";
-                    return;
                 } else {
                     window.location.href = "/api/customer";
-                    return;
                 }
             },
             error: function(xhr) {
-                let msg = "Login failed";
+                let msg = "Login failed.";
                 if (xhr.responseJSON && xhr.responseJSON.error) {
                     msg = xhr.responseJSON.error;
                 }
-                alert(msg);
+                showAlert("error", msg);
             }
         });
     });

@@ -42,8 +42,10 @@
         </nav>
     </header>
     <main class="container">
+        {% include "components/alert.html" %}
         {% block content %}{% endblock %}
     </main>
+    <script src="{{ url_for('static', filename='js/alert.js') }}"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

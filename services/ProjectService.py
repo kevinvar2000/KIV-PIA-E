@@ -32,13 +32,13 @@ class ProjectService:
 
         if source_file is None:
             raise ValueError("Source file is required.")
-        
+
         filename = str(customer_id) + ProjectService.FILENAME_SEPARATOR + source_file.filename
         file_path = os.path.join(ProjectService.ORIGINAL_FILES_FOLDER, filename)
 
         source_file.save(file_path)
 
-        project = Project.create_project(customer_id, project_name, description, target_language, file_path)
+        project = Project.create_project(customer_id, project_name, description, target_language, filename)
 
         translators = UserService.get_translators_by_language(target_language)
         if translators:
@@ -142,31 +142,46 @@ class ProjectService:
             raise ValueError("Feedback must be a valid non-empty string.")
 
         Project.update_status(project_id, ProjectState.REJECTED.value)
-        Project.save_feedback(project_id, feedback)
+        # check if the feedback for the project already exists
+        try:
+            existing_feedback = Project.get_feedback(project_id)
+        except ValueError:
+            existing_feedback = None
+
+        if existing_feedback:
+            Project.update_feedback(project_id, feedback)
+        else:
+            Project.save_feedback(project_id, feedback)
 
 
     @staticmethod
-    def get_original_file(project_id: str) -> str:
+    def get_original_file(project_id: str) -> tuple[str, str]:
         if not project_id or not isinstance(project_id, str):
             raise ValueError("Project ID must be a valid non-empty string.")
         
-        filename = Project.get_original_file(project_id)
-        if not filename:
+        file = Project.get_original_file(project_id)
+        if not file:
             raise ValueError("Original file not found.")
+        
+        file_path = os.path.join(ProjectService.ORIGINAL_FILES_FOLDER, file)
 
-        return filename
+        filename= file.split(ProjectService.FILENAME_SEPARATOR, 1)[1]
 
+        return file_path, filename
 
-    @staticmethod
-    def get_translated_file(project_id: str) -> str:
+    def get_translated_file(project_id: str) -> tuple[str, str]:
         if not project_id or not isinstance(project_id, str):
             raise ValueError("Project ID must be a valid non-empty string.")
         
-        filename = Project.get_translated_file(project_id)
-        if not filename:
+        file = Project.get_translated_file(project_id)
+        if not file:
             raise ValueError("Translated file not found.")
+        
+        file_path =  os.path.join(ProjectService.TRANSLATED_FILES_FOLDER, file)
 
-        return filename
+        filename= file.split(ProjectService.FILENAME_SEPARATOR, 1)[1]
+
+        return file_path, filename
 
 
     @staticmethod
@@ -187,7 +202,7 @@ class ProjectService:
         if not project:
             raise ValueError("Project not found.")
 
-        Project.save_translated_file(project_id, file_path)
+        Project.save_translated_file(project_id, filename)
         Project.update_status(project_id, ProjectState.COMPLETED.value)
 
 
@@ -196,5 +211,9 @@ class ProjectService:
         """Check projects for rejected status and print feedbacks."""
         for project in projects:
             if project.state == ProjectState.REJECTED:
-                feedback = Project.get_feedback(project.id)
+                # check if the feedback for the project already exists
+                try:
+                    feedback = Project.get_feedback(project.id)
+                except ValueError:
+                    feedback = None
                 project.feedback = feedback

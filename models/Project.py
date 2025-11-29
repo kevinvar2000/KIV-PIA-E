@@ -154,10 +154,19 @@ class Project:
 
     @staticmethod
     def save_feedback(project_id: str, feedback: str) -> None:
+
+        print( "Saving feedback:", project_id, feedback, flush=True)
+        print(f"Query:",
+               "INSERT INTO Feedbacks (projectId, text, createdAt) VALUES (%s, %s, %s)",
+               (project_id, feedback, datetime.utcnow()), flush=True)
+
         result = db.execute_query(
             "INSERT INTO Feedbacks (projectId, text, createdAt) VALUES (%s, %s, %s)",
             (project_id, feedback, datetime.utcnow())
         )
+
+        print("Result of saving feedback:", result, flush=True)
+        
         if not result:
             raise ValueError("Failed to save feedback for the project.")
 
@@ -171,7 +180,17 @@ class Project:
         if not result:
             raise ValueError("Feedback not found.")
         return result[0]['text']
-        
+
+
+    @staticmethod
+    def update_feedback(project_id: str, feedback: str) -> None:
+        result = db.execute_query(
+            "UPDATE Feedbacks SET text = %s, createdAt = %s WHERE projectId = %s",
+            (feedback, datetime.utcnow(), project_id)
+        )
+        if not result:
+            raise ValueError("Failed to update feedback for the project.")
+
     
     @staticmethod
     def save_translated_file(project_id: str, translated_file: bytes) -> None:
