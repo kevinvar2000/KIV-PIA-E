@@ -32,6 +32,9 @@ class ProjectService:
 
         if source_file is None:
             raise ValueError("Source file is required.")
+        
+        if source_file.content_length > MAX_FILE_SIZE_MB * 1024 * 1024:
+            raise ValueError(f"Source file exceeds the maximum allowed size of {MAX_FILE_SIZE_MB} MB.")
 
         filename = str(customer_id) + ProjectService.FILENAME_SEPARATOR + source_file.filename
         file_path = os.path.join(ProjectService.ORIGINAL_FILES_FOLDER, filename)
@@ -192,7 +195,10 @@ class ProjectService:
 
         if translated_file is None:
             raise ValueError("Translated file is required.")
-        
+
+        if translated_file.content_length > MAX_FILE_SIZE_MB * 1024 * 1024:
+            raise ValueError(f"Translated file exceeds the maximum allowed size of {MAX_FILE_SIZE_MB} MB.")
+
         filename = str(project_id) + ProjectService.FILENAME_SEPARATOR + translated_file.filename
         file_path = os.path.join(ProjectService.TRANSLATED_FILES_FOLDER, filename)
 

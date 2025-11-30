@@ -46,6 +46,13 @@ async function uploadTranslatedFile(projectId) {
         return;
     }
 
+    // check max file size (10 MB)
+    const MAX_FILE_SIZE = 10 * 1024 * 1024;
+    if (file.size > MAX_FILE_SIZE) {
+        showAlert("error", "File exceeds the maximum size of 10 MB.");
+        return;
+    }
+
     const formData = new FormData();
     formData.append("translated_file", file);
 
@@ -146,6 +153,13 @@ async function createProject(event) {
 
     if (!name || !description || !language || !sourceFile) {
         showAlert("warning", "All fields are required.");
+        return;
+    }
+
+    // check max file size (10 MB)
+    const MAX_FILE_SIZE = 10 * 1024 * 1024;
+    if (sourceFile.size > MAX_FILE_SIZE) {
+        showAlert("error", "Source file exceeds the maximum size of 10 MB.");
         return;
     }
 
