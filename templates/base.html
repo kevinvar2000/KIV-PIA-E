@@ -25,21 +25,23 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
                         {% if session.get('user') %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('auth_bp.logout') }}" data-i18n="nav_logout"></a>
+                            <li class="nav-item me-2">
+                                <a class="btn btn-sm btn-outline-danger rounded-pill px-3" href="{{ url_for('auth_bp.logout') }}" data-i18n="nav_logout"></a>
                             </li>
                         {% else %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('auth_bp.login_page') }}" data-i18n="nav_login"></a>
+                            <li class="nav-item me-2">
+                                <a class="btn btn-sm btn-primary rounded-pill px-3" href="{{ url_for('auth_bp.login_page') }}" data-i18n="nav_login"></a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('auth_bp.register_page') }}" data-i18n="nav_register"></a>
+                            <li class="nav-item me-2">
+                                <a class="btn btn-sm btn-success rounded-pill px-3" href="{{ url_for('auth_bp.register_page') }}" data-i18n="nav_register"></a>
                             </li>
                         {% endif %}
-                        <select id="lang-select" onchange="loadLanguage(this.value)">
-                            <option value="en">EN</option>
-                            <option value="sk">SK</option>
-                        </select>
+                        <li class="nav-item">
+                            <select id="lang-select" onchange="loadLanguage(this.value)">
+                                <option value="en">EN</option>
+                                <option value="sk">SK</option>
+                            </select>
+                        </li>
                     </ul>
                 </div>
             </div>
