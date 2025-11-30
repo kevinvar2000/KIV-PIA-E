@@ -2,21 +2,21 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h1 class="mb-4">Translator Dashboard</h1>
+    <h1 class="mb-4" data-i18n="translator_dashboard"></h1>
 
     <div class="card mb-5">
         <div class="card-header">
-            <h2 class="h5 mb-0">Assigned Projects</h2>
+            <h2 class="h5 mb-0" data-i18n="assigned_projects"></h2>
         </div>
         <div class="table-responsive">
             <table class="table table-dark table-hover align-middle text-white">
             <thead>
                 <tr>
-                <th>File</th>
-                <th>State</th>
-                <th>Language</th>
-                <th>Created</th>
-                <th class="text-center">Actions</th>
+                <th data-i18n="file"></th>
+                <th data-i18n="state"></th>
+                <th data-i18n="lang"></th>
+                <th data-i18n="created"></th>
+                <th class="text-center" data-i18n="actions"></th>
                 </tr>
             </thead>
             <tbody>
@@ -35,15 +35,15 @@
                     <td class="text-end">
                         <div class="d-flex flex-wrap align-items-end gap-2">
                             
-                            <button class="btn btn-outline-primary btn-sm" onclick="downloadOriginal('{{ project.id }}')">Original</button>
+                            <button class="btn btn-outline-primary btn-sm" onclick="downloadOriginal('{{ project.id }}')" data-i18n="original"></button>
                             
                             {% if state != 'completed' %}
                             <input type="file" class="d-none" id="upload-input-{{ project.id }}" accept=".txt,.doc,.docx,.pdf,.rtf,.odt,.html,.md" onchange="uploadTranslatedFile('{{ project.id }}')">
-                            <button type="button" class="btn btn-success btn-sm" onclick="document.getElementById('upload-input-{{ project.id }}').click();">Upload</button>
+                            <button type="button" class="btn btn-success btn-sm" onclick="document.getElementById('upload-input-{{ project.id }}').click();" data-i18n="upload"></button>
                             {% endif %}
                             
                             {% if project.feedback %}
-                            <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="collapse" data-bs-target="#feedback-{{ project.id }}">Feedback</button>
+                            <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="collapse" data-bs-target="#feedback-{{ project.id }}" data-i18n="feedback"></button>
                             {% endif %}
 
                         </div>
@@ -54,7 +54,7 @@
                     <td colspan="6" class="p-0 border-0">
                         <div class="collapse" id="feedback-{{ project.id }}">
                             <div class="p-3 bg-dark border-top">
-                                <strong>Feedback:</strong>
+                                <strong data-i18n="feedback"></strong>
                                 <p class="mb-0">{{ project.feedback }}</p>
                             </div>
                         </div>
@@ -63,7 +63,7 @@
                 {% endif %}
                 {% else %}
                 <tr>
-                <td colspan="6">No assigned projects.</td>
+                <td colspan="6" data-i18n="no_assigned_projects"></td>
                 </tr>
                 {% endfor %}
             </tbody>

@@ -2,12 +2,12 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h1 class="mb-4">Customer Dashboard</h1>
+    <h1 class="mb-4" data-i18n="customer_dashboard"></h1>
 
     <!-- List of Own Projects -->
     <div class="card mb-5">
         <div class="card-header">
-            <h2 class="h5 mb-0">Your Projects</h2>
+            <h2 class="h5 mb-0" data-i18n="your_projects"></h2>
         </div>
         <ul class="list-group list-group-flush">
             {% for project in projects %}
@@ -24,28 +24,28 @@
                     <span class="badge bg-info text-dark">{{ project.language }}</span>
 
                     <div class="ms-auto d-flex align-items-center gap-2">
-                        <button class="btn btn-outline-primary btn-sm" onclick="downloadOriginal('{{ project.id }}')">Original</button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="downloadOriginal('{{ project.id }}')" data-i18n="original"></button>
                         {% if project.translated_file %}
-                        <button class="btn btn-outline-success btn-sm" onclick="downloadTranslation('{{ project.id }}')">Translation</button>
+                        <button class="btn btn-outline-success btn-sm" onclick="downloadTranslation('{{ project.id }}')" data-i18n="translation"></button>
                         {% endif %}
                         {% if project.state.name == 'COMPLETED' %}
-                            <button class="btn btn-success btn-sm" onclick="acceptProject('{{ project.id }}')">Accept</button>
-                            <button class="btn btn-danger btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#reject-form-{{ project.id }}">Reject</button>
+                            <button class="btn btn-success btn-sm" onclick="acceptProject('{{ project.id }}')" data-i18n="accept"></button>
+                            <button class="btn btn-danger btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#reject-form-{{ project.id }}" data-i18n="reject"></button>
                         {% endif %}
                     </div>
                 </div>
                 {% if project.state.name == 'COMPLETED' %}
                 <div class="collapse mt-2 " id="reject-form-{{ project.id }}">
                     <div class="border rounded p-2 bg-dark">
-                        <label for="feedback-{{ project.id }}" class="form-label mb-1">Feedback for Translator</label>
+                        <label for="feedback-{{ project.id }}" class="form-label mb-1" data-i18n="feedback_for_translator"></label>
                         <textarea class="form-control form-control-sm mb-2" id="feedback-{{ project.id }}" rows="3" required></textarea>
-                        <button class="btn btn-warning btn-sm" onclick="rejectProject('{{ project.id }}')">Submit Rejection</button>
+                        <button class="btn btn-warning btn-sm" onclick="rejectProject('{{ project.id }}')" data-i18n="submit_rejection"></button>
                     </div>
                 </div>
                 {% endif %}
             </li>
             {% else %}
-            <li class="list-group-item">No projects found.</li>
+            <li class="list-group-item" data-i18n="no_projects_found"></li>
             {% endfor %}
         </ul>
     </div>
@@ -53,23 +53,23 @@
     <!-- Create New Project -->
     <div class="card mb-5">
         <div class="card-header">
-            <h2 class="h5 mb-0">Create New Project</h2>
+            <h2 class="h5 mb-0" data-i18n="create_new_project"></h2>
         </div>
         <div class="card-body">
             <form id="createProjectForm">
                             
                 <div class="mb-3">
-                    <label for="project_name" class="form-label">Project Name:</label>
+                    <label for="project_name" class="form-label" data-i18n="project_name"></label>
                     <input type="text" class="form-control" id="project_name" required>
                 </div>
                 
                 <div class="mb-3">
-                    <label for="description" class="form-label">Description:</label>
+                    <label for="description" class="form-label" data-i18n="description"></label>
                     <textarea class="form-control" id="description" required></textarea>
                 </div>
                 
                 <div class="mb-3" id="target-language-container">
-                    <label for="id_target_language" class="form-label">Target Language</label>
+                    <label for="id_target_language" class="form-label" data-i18n="target_language"></label>
                     <select class="selectpicker form-control"
                             id="id_target_language"
                             data-live-search="true"
@@ -80,18 +80,18 @@
                         <option value="{{ lang_code }}">{{ lang_name }}</option>
                         {% endfor %}
                     </select>
-                    <div class="form-text" id="target_language_help">Select the target language to be translated to.</div>
+                    <div class="form-text" id="target_language_help" data-i18n="target_language_help"></div>
                 </div>
 
                 <div class="mb-3">
-                    <label for="source_file" class="form-label">Source File:</label>
+                    <label for="source_file" class="form-label" data-i18n="source_file"></label>
                     <input type="file" class="form-control bg-dark text-white"
                         id="source_file"
                         accept=".txt,.doc,.docx,.pdf,.rtf,.odt,.html,.md">
-                    <div id="source_file_help" class="form-text">Max file size: {{ max_file_size_mb or 10 }} MB.</div>
+                    <div id="source_file_help" class="form-text" data-i18n="source_file_help">Max file size: {{ max_file_size_mb or 10 }} MB.</div>
                 </div>
 
-                <button type="submit" class="btn btn-primary">Create Project</button>
+                <button type="submit" class="btn btn-primary" data-i18n="create_project_button"></button>
             </form>
         </div>
     </div>

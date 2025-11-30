@@ -4,31 +4,31 @@
 <div class="container mt-5" style="max-width: 400px;">
     <div class="card shadow">
         <div class="card-body">
-            <h2 class="card-title text-center mb-4">Register</h2>
+            <h2 class="card-title text-center mb-4" data-i18n="register_title"></h2>
             <form id="registerForm" method="post">
                 <div class="mb-3">
-                    <label for="id_name" class="form-label">Name</label>
+                    <label for="id_name" class="form-label" data-i18n="register_name"></label>
                     <input type="text" class="form-control" name="name" id="id_name" required>
                 </div>
                 <div class="mb-3">
-                    <label for="id_email" class="form-label">Email</label>
+                    <label for="id_email" class="form-label" data-i18n="register_email"></label>
                     <input type="email" class="form-control" name="email" id="id_email" required>
                 </div>
                 <div class="mb-3">
-                    <label for="id_password" class="form-label">Password</label>
+                    <label for="id_password" class="form-label" data-i18n="register_password"></label>
                     <input type="password" class="form-control" name="password" id="id_password" required>
                 </div>
                 <div class="mb-3">
-                    <label for="id_role" class="form-label">Register as</label>
+                    <label for="id_role" class="form-label" data-i18n="register_role"></label>
                     <select class="form-select" name="role" id="id_role" required onchange="toggleLanguages()">
-                        <option value="">Select role</option>
-                        <option value="customer">Customer</option>
-                        <option value="translator">Translator</option>
+                        <option value="" data-i18n="register_select_role"></option>
+                        <option value="customer" data-i18n="register_customer"></option>
+                        <option value="translator" data-i18n="register_translator"></option>
                     </select>
                 </div>
 
                 <div class="mb-3" id="languages-container" style="display:none;">
-                <label for="id_languages" class="form-label">Languages</label>
+                <label for="id_languages" class="form-label" data-i18n="register_languages"></label>
                 <select class="selectpicker form-control" 
                         name="languages" 
                         id="id_languages" 
@@ -42,7 +42,7 @@
                 </select>
                 <div class="form-text" id="selected-languages-text"></div>
                 </div>
-                <button type="submit" class="btn btn-primary w-100">Register</button>
+                <button type="submit" class="btn btn-primary w-100" data-i18n="register_button"></button>
             </form>
         </div>
     </div>
