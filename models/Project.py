@@ -143,14 +143,24 @@ class Project:
 
 
     @staticmethod
-    def update_status(project_id: str, status: str) -> None:
+    def update_state(project_id: str, state: str) -> None:
         result = db.execute_query(
             "UPDATE Projects SET state = %s WHERE id = %s",
-            (status, project_id)
+            (state, project_id)
         )
         if not result:
             raise ValueError("Failed to update project status.")
 
+
+    @staticmethod
+    def get_state(project_id: str) -> ProjectState:
+        result = db.execute_query(
+            "SELECT state FROM Projects WHERE id = %s",
+            (project_id,)
+        )
+        if not result:
+            raise ValueError("Project not found.")
+        return ProjectState(result[0]['state'])
 
     @staticmethod
     def save_feedback(project_id: str, feedback: str) -> None:

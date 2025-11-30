@@ -52,7 +52,7 @@ class ProjectService:
             # UserService.notify_translator(translator.id, project.id)
         else:
             print(f"No translators available for language: {target_language}", flush=True)
-            project.update_status(project.id, ProjectState.CLOSED.value)
+            project.update_state(project.id, ProjectState.CLOSED.value)
 
         return project
 
@@ -99,7 +99,7 @@ class ProjectService:
         if not status or not isinstance(status, str):
             raise ValueError("Status must be a valid non-empty string.")
 
-        Project.update_status(project_id, status)
+        Project.update_state(project_id, status)
 
     @staticmethod
     def assign_translator_to_project(project_id: str, translator_id: str) -> None:
@@ -132,7 +132,11 @@ class ProjectService:
         if not project_id or not isinstance(project_id, str):
             raise ValueError("Project ID must be a valid non-empty string.")
 
-        Project.update_status(project_id, ProjectState.CLOSED.value)    # TODO: Closed or Completed?
+        state = Project.get_state(project_id)
+        if state != ProjectState.COMPLETED:
+            raise ValueError("Only projects in COMPLETED state can be accepted.")
+
+        Project.update_state(project_id, ProjectState.CLOSED.value)
 
 
     @staticmethod
@@ -144,7 +148,11 @@ class ProjectService:
         if not feedback or not isinstance(feedback, str):
             raise ValueError("Feedback must be a valid non-empty string.")
 
-        Project.update_status(project_id, ProjectState.REJECTED.value)
+        state = Project.get_state(project_id)
+        if state != ProjectState.COMPLETED:
+            raise ValueError("Only projects in COMPLETED state can be rejected.")
+
+        Project.update_state(project_id, ProjectState.REJECTED.value)
         # check if the feedback for the project already exists
         try:
             existing_feedback = Project.get_feedback(project_id)
@@ -199,6 +207,10 @@ class ProjectService:
         if translated_file.content_length > MAX_FILE_SIZE_MB * 1024 * 1024:
             raise ValueError(f"Translated file exceeds the maximum allowed size of {MAX_FILE_SIZE_MB} MB.")
 
+        state = Project.get_state(project_id)
+        if state != ProjectState.ASSIGNED:
+            raise ValueError("Cannot upload translated file for a project that is not in ASSIGNED state.")
+
         filename = str(project_id) + ProjectService.FILENAME_SEPARATOR + translated_file.filename
         file_path = os.path.join(ProjectService.TRANSLATED_FILES_FOLDER, filename)
 
@@ -209,7 +221,7 @@ class ProjectService:
             raise ValueError("Project not found.")
 
         Project.save_translated_file(project_id, filename)
-        Project.update_status(project_id, ProjectState.COMPLETED.value)
+        Project.update_state(project_id, ProjectState.COMPLETED.value)
 
 
     @staticmethod
