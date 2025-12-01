@@ -1,88 +1,146 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1 class="mb-4">Administrator Dashboard</h1>
+<div class="container mt-4">
 
-<h2 class="mb-3">Projects with Feedback</h2>
+    <h1 class="mb-4" data-i18n="admin_dashboard"></h1>
 
-<form method="get" action="" class="row g-3 align-items-center mb-4">
-    <div class="col-auto">
-        <label for="state" class="col-form-label">Filter by State:</label>
-    </div>
-    <div class="col-auto">
-        <select name="state" id="state" class="form-select">
-            <option value="">All</option>
-            <option value="open">Open</option>
-            <option value="in_progress">In Progress</option>
-            <option value="closed">Closed</option>
-        </select>
-    </div>
-    <div class="col-auto">
-        <button type="submit" class="btn btn-primary">Filter</button>
-    </div>
-</form>
+    <div class="card mb-5">
+        <div class="card-header">
+            <h2 class="h5 mb-0" data-i18n="projects_with_feedback"></h2>
+        </div>
 
-<div class="table-responsive">
-<table class="table table-bordered align-middle">
-    <thead class="table-light">
-        <tr>
-            <th>Project Name</th>
-            <th>State</th>
-            <th>Feedback</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for project in projects %}
-            <tr>
-                <td>{{ project.name }}</td>
-                <td>
-                    <span class="badge 
-                        {% if project.state == 'open' %}bg-success
-                        {% elif project.state == 'in_progress' %}bg-warning text-dark
-                        {% elif project.state == 'closed' %}bg-secondary
+        <!-- FILTER FORM -->
+        <form method="get" class="row g-3 align-items-center p-3">
+            <div class="col-auto">
+                <label for="state" class="col-form-label" data-i18n="filter_by_state"></label>
+            </div>
+            <div class="col-auto">
+                <select name="state" id="state" class="form-select form-select-sm">
+                    {% for st in states %}
+                        {% if st == 'all' %}
+                            <option value="" {% if not selected_state %}selected{% endif %} data-i18n="all"></option>
+                        {% else %}
+                            <option value="{{ st }}" {% if selected_state == st %}selected{% endif %}>
+                                {{ st|replace('_', ' ')|title }}
+                            </option>
                         {% endif %}
-                    ">
-                        {{ project.state|replace("_", " ")|title }}
-                    </span>
-                </td>
-                <td>
-                    <ul class="list-unstyled mb-0">
-                        {% for feedback in project.feedbacks %}
-                            <li class="mb-3">
-                                <strong>{{ feedback.author }}:</strong> {{ feedback.message }}
-                                <form method="post" action="/admin/respond/{{ feedback.id }}" class="row g-2 mt-2">
-                                    <div class="col-md-6">
-                                        <input type="text" name="response" class="form-control" placeholder="Send a message..." required>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <select name="recipient" class="form-select">
-                                            <option value="customer">Customer (in-app)</option>
-                                            <option value="translator">Translator (in-app)</option>
-                                            <option value="customer_email">Customer (email)</option>
-                                            <option value="translator_email">Translator (email)</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-2">
-                                        <button type="submit" class="btn btn-outline-primary w-100">Send</button>
-                                    </div>
-                                </form>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </td>
-                <td>
-                    {% if project.state != "closed" %}
-                        <form method="post" action="/admin/close_project/{{ project.id }}">
-                            <button type="submit" class="btn btn-danger btn-sm">Mark as Closed</button>
-                        </form>
-                    {% else %}
-                        <span class="text-muted">Closed</span>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary btn-sm" data-i18n="filter"></button>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle text-white">
+                <thead>
+                    <tr>
+                        <th data-i18n="project_name"></th>
+                        <th data-i18n="state"></th>
+                        <th data-i18n="feedback"></th>
+                        <th class="text-center" data-i18n="actions"></th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                {% for project in projects %}
+
+                    <tr>
+                        <td><strong>{{ project.name }}</strong></td>
+                        
+                        {% set state = project.state.name|lower %}
+                        {% set badge_class = 'bg-info' if state == 'assigned'
+                                        else 'bg-success' if state == 'completed'
+                                        else 'bg-danger' if state == 'rejected'
+                                        else 'bg-black' if state == 'closed'
+                                        else 'bg-secondary' %}
+                        <td><span class="badge {{ badge_class }}">{{ state|capitalize }}</span></td>
+
+                        <td>
+                            {% if project.feedbacks %}
+                                <button class="btn btn-sm btn-outline-warning"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#fb-{{ project.id }}"
+                                        data-i18n="show_feedback"></button>
+                            {% else %}
+                                <span class="text-white" data-i18n="no_feedback"></span>
+                            {% endif %}
+                        </td>
+
+                        <td class="text-end">
+                            <div class="d-flex flex-wrap gap-2 justify-content-start">
+
+                                {% if state != 'closed' %}
+                                    <button class="btn btn-danger btn-sm" onclick="closeProject('{{ project.id }}')" data-i18n="mark_closed"></button>
+                                {% else %}
+                                    <span class="text-white" data-i18n="closed"></span>
+                                {% endif %}
+
+                            </div>
+                        </td>
+                    </tr>
+
+                    {% if project.feedbacks %}
+                    <tr>
+                        <td colspan="4" class="p-0 border-0">
+                            <div class="collapse" id="fb-{{ project.id }}">
+                                <div class="p-3 bg-dark border-top">
+
+                                    {% for fb in project.feedbacks %}
+                                        <div class="mb-4">
+                                            <strong>{{ fb.author }}:</strong>
+                                            <p class="mb-2">{{ fb.message }}</p>
+                                            
+                                            <!-- RESPONSE FORM -->
+                                            <form method="post" 
+                                                  action="{{ url_for('admin.respond_to_feedback', feedback_id=fb.id) }}"
+                                                  class="row g-2">
+
+                                                <div class="col-md-6">
+                                                    <input type="text" name="response" class="form-control form-control-sm"
+                                                           placeholder="Send a message..." required>
+                                                </div>
+
+                                                <div class="col-md-4">
+                                                    <select name="recipient" class="form-select form-select-sm">
+                                                        <option value="customer" data-i18n="customer_inapp"></option>
+                                                        <option value="translator" data-i18n="translator_inapp"></option>
+                                                        <option value="customer_email" data-i18n="customer_email"></option>
+                                                        <option value="translator_email" data-i18n="translator_email"></option>
+                                                    </select>
+                                                </div>
+
+                                                <div class="col-md-2">
+                                                    <button type="submit" 
+                                                            class="btn btn-outline-primary btn-sm w-100"
+                                                            data-i18n="send"></button>
+                                                </div>
+
+                                            </form>
+                                        </div>
+                                    {% endfor %}
+
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
                     {% endif %}
-                </td>
-            </tr>
-        {% endfor %}
-    </tbody>
-</table>
+
+                {% else %}
+                    <tr>
+                        <td colspan="4" data-i18n="no_projects_feedback"></td>
+                    </tr>
+                {% endfor %}
+
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/project.js') }}"></script>
 {% endblock %}

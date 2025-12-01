@@ -54,14 +54,17 @@ class ProjectService:
             print(f"No translators available for language: {target_language}", flush=True)
             project.update_state(project.id, ProjectState.CLOSED.value)
 
+            # UserService.notify_customer(customer_id, project.id)
+
         return project
 
     @staticmethod
     def get_all_projects() -> list:
         """Retrieve all projects."""
         projects = Project.get_all()
-        projects_dict = [ProjectService.project_to_dict(p) for p in projects]
-        return projects_dict
+        # projects_dict = [ProjectService.project_to_dict(p) for p in projects]
+        # return projects_dict
+        return projects
 
     @staticmethod
     def get_projects_by_user_id(user_id: str, role: str) -> list:
@@ -136,7 +139,9 @@ class ProjectService:
         if state != ProjectState.COMPLETED:
             raise ValueError("Only projects in COMPLETED state can be accepted.")
 
-        Project.update_state(project_id, ProjectState.CLOSED.value)
+        Project.update_state(project_id, ProjectState.APPROVED.value)
+
+        # UserService.notify_translator_of_acceptance(project_id)
 
 
     @staticmethod
@@ -163,6 +168,23 @@ class ProjectService:
             Project.update_feedback(project_id, feedback)
         else:
             Project.save_feedback(project_id, feedback)
+        
+        # UserService.notify_translator_of_rejection(project_id, feedback)
+
+
+    @staticmethod
+    def close_project(project_id: str) -> None:
+        """Close a project."""
+        if not project_id or not isinstance(project_id, str):
+            raise ValueError("Project ID must be a valid non-empty string.")
+
+        state = Project.get_state(project_id)
+        if state == ProjectState.CLOSED:
+            raise ValueError("Project is already closed.")
+
+        Project.update_state(project_id, ProjectState.CLOSED.value)
+
+        # UserService.notify_users_of_closure(project_id)
 
 
     @staticmethod
@@ -223,6 +245,8 @@ class ProjectService:
         Project.save_translated_file(project_id, filename)
         Project.update_state(project_id, ProjectState.COMPLETED.value)
 
+        # UserService.notify_customer(project.customer_id, project.id)
+
 
     @staticmethod
     def check_feedbacks(projects: list) -> None:
@@ -235,3 +259,9 @@ class ProjectService:
                 except ValueError:
                     feedback = None
                 project.feedback = feedback
+
+    
+    @staticmethod
+    def get_all_project_states() -> list:
+        """Retrieve all possible project states."""
+        return list(ProjectState)

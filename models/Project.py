@@ -105,14 +105,35 @@ class Project:
         projects = []
         for row in result:
             project = Project(
-                customer_id=row['customerId'],
-                translator_id=row['translatorId'],
-                language=row['languageCode'],
-                original_file=row['originalFile']
+                customer_id=row.get('customerId') or '',
+                translator_id=row.get('translatorId'),
+                language=row.get('languageCode') or '',
+                original_file=row.get('originalFile')
             )
-            project.translated_file = row['translatedFile']
-            project.state = ProjectState(row['state'])
-            project.created_at = row['createdAt']
+            project.id = row.get('id', project.id)
+
+            name = row.get('name')
+            if name is not None:
+                project.name = name
+
+            description = row.get('description')
+            if description is not None:
+                project.description = description
+
+            translated = row.get('translatedFile')
+            project.translated_file = translated if translated is not None else None
+
+            state_val = row.get('state')
+            if state_val:
+                try:
+                    project.state = ProjectState(state_val)
+                except ValueError:
+                    project.state = ProjectState.CREATED
+
+            created_at = row.get('createdAt')
+            if created_at is not None:
+                project.created_at = created_at
+
             projects.append(project)
 
         return projects

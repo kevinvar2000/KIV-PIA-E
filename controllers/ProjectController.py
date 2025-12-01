@@ -112,6 +112,16 @@ def reject_translation(project_id):
         return jsonify({'error': str(e)}), 400
 
 
+@proj_bp.route('/projects/<project_id>/close', methods=['POST'])
+def close_project(project_id):
+    """API endpoint to close a project."""
+    try:
+        ProjectService.close_project(project_id)
+        return jsonify({'message': 'Project closed successfully.'}), 200
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+
+
 @proj_bp.route('/project/<project_id>/download/original', methods=['GET'])
 def download_original_file(project_id):
     """API endpoint to download the original file of a project."""

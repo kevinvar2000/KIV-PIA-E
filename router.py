@@ -30,9 +30,3 @@ def home():
         return redirect(url_for('user_bp.administrator'))
     else:
         return "Unknown role", 403
-
-
-@app_bp.route('/administrator')
-def administrator():
-    # Administrator page logic here
-    return render_template('pages/administrator.html')

@@ -143,6 +143,30 @@ async function rejectProject(projectId) {
 }
 
 
+async function closeProject(projectId) {
+    try {
+        const response = await fetch(`/api/projects/${projectId}/close`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"  // optional, backend may ignore
+            }
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            showAlert("error", data.error || "Failed to close project.");
+            return;
+        }
+        showAlert("success", data.message || "Project closed successfully!");
+
+        // Optional: refresh after delay
+        setTimeout(() => location.reload(), 1200);
+    } catch (err) {
+        console.error("Close project error:", err);
+        showAlert("error", "Network error while closing project.");
+    }
+}
+
+
 async function createProject(event) {
     event.preventDefault(); // stop full reload
 

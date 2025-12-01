@@ -46,5 +46,16 @@
     "actions": "Akcie",
     "upload": "Nahrať",
     "feedback": "Spätná väzba",
-    "no_assigned_projects": "Žiadne priradené projekty."
+    "no_assigned_projects": "Žiadne priradené projekty.",
+    "admin_dashboard": "Dashboard administrátora",
+    "projects_with_feedback": "Projekty so spätnou väzbou",
+    "filter_by_state": "Filtrovať podľa stavu",
+    "all": "Všetky",
+    "filter": "Filtrovať",
+    "show_feedback": "Zobraziť spätnú väzbu",
+    "no_feedback": "Žiadna dostupná spätná väzba.",
+    "mark_closed": "Označiť ako uzavreté",
+    "closed": "Uzavreté",
+    "no_projects_feedback": "Žiadne dostupné projekty.",
+    "no_projects": "Žiadne dostupné projekty."
 }

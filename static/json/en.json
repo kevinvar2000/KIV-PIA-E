@@ -46,5 +46,16 @@
     "actions": "Actions",
     "upload": "Upload",
     "feedback": "Feedback",
-    "no_assigned_projects": "No assigned projects."
+    "no_assigned_projects": "No assigned projects.",
+    "admin_dashboard": "Administrator Dashboard",
+    "projects_with_feedback": "Projects with Feedback",
+    "filter_by_state": "Filter by State",
+    "all": "All",
+    "filter": "Filter",
+    "show_feedback": "Show Feedback",
+    "no_feedback": "No feedback available.",
+    "mark_closed": "Mark as Closed",
+    "closed": "Closed",
+    "no_projects_feedback": "No projects available.",
+    "no_projects": "No projects available."
 }
