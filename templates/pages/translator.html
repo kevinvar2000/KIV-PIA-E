@@ -13,9 +13,11 @@
             <thead>
                 <tr>
                 <th data-i18n="file"></th>
+                <th data-i18n="name"></th>
+                <th data-i18n="description"></th>
                 <th data-i18n="state"></th>
                 <th data-i18n="lang"></th>
-                <th data-i18n="created"></th>
+                <th data-i18n="created_at"></th>
                 <th class="text-center" data-i18n="actions"></th>
                 </tr>
             </thead>
@@ -23,11 +25,13 @@
                 {% for project in projects %}
                 <tr>
                     <td><strong>{{ project.original_file }}</strong></td>
+                    <td>{% if project.name %}{{ project.name }}{% else %}-{% endif %}</td>
+                    <td class="text-truncate text-white-50" style="max-width: 20rem;">{% if project.description %}{{ project.description }}{% else %}-{% endif %}</td>
                     {% set state = project.state.name|lower %}
                     {% set badge_class = 'bg-info' if state == 'assigned'
                                     else 'bg-success' if state == 'completed'
                                     else 'bg-danger' if state == 'rejected'
-                                    else 'bg-dark' if state == 'closed'
+                                    else 'bg-black' if state == 'closed'
                                     else 'bg-secondary' %}
                     <td><span class="badge {{ badge_class }}">{{ project.state.name|capitalize }}</span></td>
                     <td>{% if project.language %}{{ project.language }}{% else %}-{% endif %}</td>
@@ -37,7 +41,7 @@
                             
                             <button class="btn btn-outline-primary btn-sm" onclick="downloadOriginal('{{ project.id }}')" data-i18n="original"></button>
                             
-                            {% if state != 'completed' %}
+                            {% if state != 'completed' and state != 'closed' %}
                             <input type="file" class="d-none" id="upload-input-{{ project.id }}" accept=".txt,.doc,.docx,.pdf,.rtf,.odt,.html,.md" onchange="uploadTranslatedFile('{{ project.id }}')">
                             <button type="button" class="btn btn-success btn-sm" onclick="document.getElementById('upload-input-{{ project.id }}').click();" data-i18n="upload"></button>
                             {% endif %}
@@ -51,7 +55,7 @@
                 </tr>
                 {% if project.feedback %}
                 <tr>
-                    <td colspan="6" class="p-0 border-0">
+                    <td colspan="7" class="p-0 border-0">
                         <div class="collapse" id="feedback-{{ project.id }}">
                             <div class="p-3 bg-dark border-top">
                                 <strong data-i18n="feedback"></strong>
@@ -63,7 +67,7 @@
                 {% endif %}
                 {% else %}
                 <tr>
-                <td colspan="6" data-i18n="no_assigned_projects"></td>
+                <td colspan="7" data-i18n="no_assigned_projects"></td>
                 </tr>
                 {% endfor %}
             </tbody>

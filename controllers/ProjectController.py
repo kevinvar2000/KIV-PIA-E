@@ -112,7 +112,7 @@ def reject_translation(project_id):
         return jsonify({'error': str(e)}), 400
 
 
-@proj_bp.route('/projects/<project_id>/close', methods=['POST'])
+@proj_bp.route('/project/<project_id>/close', methods=['POST'])
 def close_project(project_id):
     """API endpoint to close a project."""
     try:

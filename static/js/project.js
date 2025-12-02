@@ -145,7 +145,7 @@ async function rejectProject(projectId) {
 
 async function closeProject(projectId) {
     try {
-        const response = await fetch(`/api/projects/${projectId}/close`, {
+        const response = await fetch(`/api/project/${projectId}/close`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"  // optional, backend may ignore

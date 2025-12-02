@@ -62,9 +62,20 @@ class ProjectService:
     def get_all_projects() -> list:
         """Retrieve all projects."""
         projects = Project.get_all()
-        # projects_dict = [ProjectService.project_to_dict(p) for p in projects]
-        # return projects_dict
-        return projects
+
+        serialized = []
+        for p in projects:
+            if isinstance(p, dict):
+                data = p
+            elif hasattr(p, "to_dict") and callable(getattr(p, "to_dict")):
+                data = p.to_dict()
+            else:
+                data = {k: (v.value if isinstance(v, ProjectState) else v) for k, v in vars(p).items()}
+            if "state" in data and isinstance(data["state"], ProjectState):
+                data["state"] = data["state"].value
+            serialized.append(data)
+
+        return serialized
 
     @staticmethod
     def get_projects_by_user_id(user_id: str, role: str) -> list:
@@ -115,18 +126,6 @@ class ProjectService:
             raise ValueError("Translator ID must be a valid non-empty string.")
 
         Project.assign_translator(project_id, translator_id)
-
-    @staticmethod
-    def project_to_dict(project: Project) -> dict:
-        """Convert a Project object to a dictionary representation."""
-        return {
-            'id': str(project.id),
-            'customer_id': str(project.customer_id),
-            'translator_id': str(project.translator_id) if project.translator_id else None,
-            'language': project.language,
-            'state': project.state.value,
-            'created_at': project.created_at.isoformat()
-        }
 
 
     @staticmethod
@@ -230,9 +229,9 @@ class ProjectService:
             raise ValueError(f"Translated file exceeds the maximum allowed size of {MAX_FILE_SIZE_MB} MB.")
 
         state = Project.get_state(project_id)
-        if state != ProjectState.ASSIGNED:
-            raise ValueError("Cannot upload translated file for a project that is not in ASSIGNED state.")
-
+        if state != ProjectState.ASSIGNED and state != ProjectState.REJECTED:
+            raise ValueError("Cannot upload translated file for a project that is not in ASSIGNED or REJECTED state.")
+    
         filename = str(project_id) + ProjectService.FILENAME_SEPARATOR + translated_file.filename
         file_path = os.path.join(ProjectService.TRANSLATED_FILES_FOLDER, filename)
 
@@ -252,13 +251,28 @@ class ProjectService:
     def check_feedbacks(projects: list) -> None:
         """Check projects for rejected status and print feedbacks."""
         for project in projects:
-            if project.state == ProjectState.REJECTED:
+            # Support both dicts (serialized projects) and model objects
+            if isinstance(project, dict):
+                state = project.get("state")
+                pid = project.get("id")
+                is_rejected = state == ProjectState.REJECTED.value or state == ProjectState.REJECTED
+            else:
+                state = getattr(project, "state", None)
+                norm_state = state.value if isinstance(state, ProjectState) else state
+                pid = getattr(project, "id", None)
+                is_rejected = norm_state == ProjectState.REJECTED.value
+
+            if is_rejected and pid:
                 # check if the feedback for the project already exists
                 try:
-                    feedback = Project.get_feedback(project.id)
+                    feedback = Project.get_feedback(pid)
                 except ValueError:
                     feedback = None
-                project.feedback = feedback
+
+                if isinstance(project, dict):
+                    project["feedback"] = feedback
+                else:
+                    project.feedback = feedback
 
     
     @staticmethod

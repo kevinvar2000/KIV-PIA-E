@@ -13,14 +13,20 @@
             {% for project in projects %}
             <li class="list-group-item">
                 <div class="d-flex flex-wrap align-items-center gap-2">
-                    <span class="fw-semibold">{{ project.original_file }}</span>
-                        {% set state = project.state.name|lower %}
-                        {% set badge_class = 'bg-info' if state == 'assigned'
-                            else 'bg-success' if state == 'completed'
-                            else 'bg-danger' if state == 'rejected'
-                            else 'bg-dark' if state == 'closed'
-                            else 'bg-secondary' %}
-                <td><span class="badge {{ badge_class }}">{{ project.state.name|capitalize }}</span></td>
+                    <span class="fw-semibold">
+                        {{ project.name or project.original_file }}
+                    </span>
+                    {% if project.name %}
+                    <span class="text-white-50">({{ project.original_file }})</span>
+                    {% endif %}
+
+                    {% set state = project.state.name|lower %}
+                    {% set badge_class = 'bg-info' if state == 'assigned'
+                        else 'bg-success' if state == 'completed'
+                        else 'bg-danger' if state == 'rejected'
+                        else 'bg-dark' if state == 'closed'
+                        else 'bg-secondary' %}
+                    <span class="badge {{ badge_class }}">{{ project.state.name|capitalize }}</span>
                     <span class="badge bg-info text-dark">{{ project.language }}</span>
 
                     <div class="ms-auto d-flex align-items-center gap-2">
@@ -34,8 +40,24 @@
                         {% endif %}
                     </div>
                 </div>
+
+                <!-- Extra details: description and created_at -->
+                <div class="mt-2 small text-white-50">
+                    {% if project.description %}
+                    <span class="me-3">
+                        <span data-i18n="description"></span>: {{ project.description }}
+                    </span>
+                    {% endif %}
+                    {% if project.created_at %}
+                    <span class="me-3">
+                        <span data-i18n="created"></span>:
+                        {{ project.created_at.strftime('%Y-%m-%d %H:%M') if project.created_at.strftime is defined else project.created_at }}
+                    </span>
+                    {% endif %}
+                </div>
+
                 {% if project.state.name == 'COMPLETED' %}
-                <div class="collapse mt-2 " id="reject-form-{{ project.id }}">
+                <div class="collapse mt-2" id="reject-form-{{ project.id }}">
                     <div class="border rounded p-2 bg-dark">
                         <label for="feedback-{{ project.id }}" class="form-label mb-1" data-i18n="feedback_for_translator"></label>
                         <textarea class="form-control form-control-sm mb-2" id="feedback-{{ project.id }}" rows="3" required></textarea>

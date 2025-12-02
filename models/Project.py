@@ -26,16 +26,6 @@ class Project:
         self.created_at = datetime.now()
         self.feedback = None
 
-    def to_dict(self) -> dict:
-        return {
-            'id': self.id,
-            'customer_id': self.customer_id,
-            'translator_id': self.translator_id,
-            'language': self.language,
-            'state': self.state.value,
-            'created_at': self.created_at.isoformat()
-        }
-
 
     @staticmethod
     def create_project(customer_id: str, project_name: str, description: str, language: str, original_file: bytes):
@@ -65,19 +55,7 @@ class Project:
             (user_id,)
         )
 
-        projects = []
-        for row in result:
-            project = Project(
-                customer_id=row['customerId'],
-                translator_id=row['translatorId'],
-                language=row['languageCode'],
-                original_file=row['originalFile']
-            )
-            project.id = row['id']
-            project.translated_file = row['translatedFile']
-            project.state = ProjectState(row['state'])
-            project.created_at = row['createdAt']
-            projects.append(project)
+        projects = Project.from_result(result)
 
         return projects
 
@@ -102,39 +80,8 @@ class Project:
         result = db.execute_query(
             "SELECT * FROM Projects"
         )
-        projects = []
-        for row in result:
-            project = Project(
-                customer_id=row.get('customerId') or '',
-                translator_id=row.get('translatorId'),
-                language=row.get('languageCode') or '',
-                original_file=row.get('originalFile')
-            )
-            project.id = row.get('id', project.id)
-
-            name = row.get('name')
-            if name is not None:
-                project.name = name
-
-            description = row.get('description')
-            if description is not None:
-                project.description = description
-
-            translated = row.get('translatedFile')
-            project.translated_file = translated if translated is not None else None
-
-            state_val = row.get('state')
-            if state_val:
-                try:
-                    project.state = ProjectState(state_val)
-                except ValueError:
-                    project.state = ProjectState.CREATED
-
-            created_at = row.get('createdAt')
-            if created_at is not None:
-                project.created_at = created_at
-
-            projects.append(project)
+        
+        projects = Project.from_result(result)
 
         return projects
 
@@ -149,18 +96,9 @@ class Project:
         if not result:
             return None
 
-        row = result[0]
-        project = Project(
-            customer_id=row['customerId'],
-            translator_id=row['translatorId'],
-            language=row['languageCode'],
-            original_file=row['originalFile']
-        )
-        project.translated_file = row['translatedFile']
-        project.state = ProjectState(row['state'])
-        project.created_at = row['createdAt']
+        projects = Project.from_result(result)
 
-        return project
+        return projects[0] if projects else None
 
 
     @staticmethod
@@ -271,17 +209,46 @@ class Project:
             (customer_id,)
         )
 
+        projects = Project.from_result(result)
+
+        return projects
+
+
+    @staticmethod
+    def from_result(result) -> list:
         projects = []
         for row in result:
             project = Project(
-                customer_id=row['customerId'],
-                translator_id=row['translatorId'],
-                language=row['languageCode'],
-                original_file=row['originalFile']
+                customer_id=row.get('customerId') or '',
+                translator_id=row.get('translatorId'),
+                language=row.get('languageCode') or '',
+                original_file=row.get('originalFile')
             )
-            project.translated_file = row['translatedFile']
-            project.state = ProjectState(row['state'])
-            project.created_at = row['createdAt']
+            project.id = row.get('id', project.id)
+
+            name = row.get('name')
+            if name is not None:
+                project.name = name
+
+            description = row.get('description')
+            if description is not None:
+                project.description = description
+
+            translated = row.get('translatedFile')
+            project.translated_file = translated if translated is not None else None
+
+            state_val = row.get('state')
+            if state_val:
+                try:
+                    project.state = ProjectState(state_val)
+                except ValueError:
+                    project.state = ProjectState.CREATED
+
+            created_at = row.get('createdAt')
+            if created_at is not None:
+                project.created_at = created_at
+
             projects.append(project)
 
         return projects
+

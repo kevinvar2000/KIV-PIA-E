@@ -39,6 +39,7 @@
                     <tr>
                         <th data-i18n="project_name"></th>
                         <th data-i18n="state"></th>
+                        <th data-i18n="lang"></th>
                         <th data-i18n="feedback"></th>
                         <th class="text-center" data-i18n="actions"></th>
                     </tr>
@@ -48,22 +49,29 @@
                 {% for project in projects %}
 
                     <tr>
-                        <td><strong>{{ project.name }}</strong></td>
-                        
-                        {% set state = project.state.name|lower %}
-                        {% set badge_class = 'bg-info' if state == 'assigned'
-                                        else 'bg-success' if state == 'completed'
-                                        else 'bg-danger' if state == 'rejected'
-                                        else 'bg-black' if state == 'closed'
+                        <td>
+                            <strong>{{ project.name }}</strong>
+                            {% if project.description %}
+                                <div class="text-white-50 small mt-1">{{ project.description }}</div>
+                            {% endif %}
+                            {% if project.created_at %}
+                                <div class="text-white-50 small mt-1">
+                                    <span data-i18n="created"></span>: {{ project.created_at }}
+                                </div>
+                            {% endif %}
+                        </td>
+                        {% set state = project['state'] %}
+                        {% set badge_class = 'bg-info' if state == 'ASSIGNED'
+                                        else 'bg-success' if state == 'COMPLETED'
+                                        else 'bg-danger' if state == 'REJECTED'
+                                        else 'bg-black' if state == 'CLOSED'
                                         else 'bg-secondary' %}
                         <td><span class="badge {{ badge_class }}">{{ state|capitalize }}</span></td>
+                        <td><span class="badge bg-info text-dark">{{ project.language }}</span></td>
 
                         <td>
-                            {% if project.feedbacks %}
-                                <button class="btn btn-sm btn-outline-warning"
-                                        data-bs-toggle="collapse"
-                                        data-bs-target="#fb-{{ project.id }}"
-                                        data-i18n="show_feedback"></button>
+                            {% if project.feedback %}
+                                <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="collapse" data-bs-target="#feedback-{{ project.id }}" data-i18n="feedback"></button>
                             {% else %}
                                 <span class="text-white" data-i18n="no_feedback"></span>
                             {% endif %}
@@ -72,7 +80,7 @@
                         <td class="text-end">
                             <div class="d-flex flex-wrap gap-2 justify-content-start">
 
-                                {% if state != 'closed' %}
+                                {% if state != 'CLOSED' %}
                                     <button class="btn btn-danger btn-sm" onclick="closeProject('{{ project.id }}')" data-i18n="mark_closed"></button>
                                 {% else %}
                                     <span class="text-white" data-i18n="closed"></span>
@@ -82,55 +90,22 @@
                         </td>
                     </tr>
 
-                    {% if project.feedbacks %}
-                    <tr>
-                        <td colspan="4" class="p-0 border-0">
-                            <div class="collapse" id="fb-{{ project.id }}">
-                                <div class="p-3 bg-dark border-top">
-
-                                    {% for fb in project.feedbacks %}
-                                        <div class="mb-4">
-                                            <strong>{{ fb.author }}:</strong>
-                                            <p class="mb-2">{{ fb.message }}</p>
-                                            
-                                            <!-- RESPONSE FORM -->
-                                            <form method="post" 
-                                                  action="{{ url_for('admin.respond_to_feedback', feedback_id=fb.id) }}"
-                                                  class="row g-2">
-
-                                                <div class="col-md-6">
-                                                    <input type="text" name="response" class="form-control form-control-sm"
-                                                           placeholder="Send a message..." required>
-                                                </div>
-
-                                                <div class="col-md-4">
-                                                    <select name="recipient" class="form-select form-select-sm">
-                                                        <option value="customer" data-i18n="customer_inapp"></option>
-                                                        <option value="translator" data-i18n="translator_inapp"></option>
-                                                        <option value="customer_email" data-i18n="customer_email"></option>
-                                                        <option value="translator_email" data-i18n="translator_email"></option>
-                                                    </select>
-                                                </div>
-
-                                                <div class="col-md-2">
-                                                    <button type="submit" 
-                                                            class="btn btn-outline-primary btn-sm w-100"
-                                                            data-i18n="send"></button>
-                                                </div>
-
-                                            </form>
-                                        </div>
-                                    {% endfor %}
-
-                                </div>
+                {% if project.feedback %}
+                <tr>
+                    <td colspan="7" class="p-0 border-0">
+                        <div class="collapse" id="feedback-{{ project.id }}">
+                            <div class="p-3 bg-dark border-top">
+                                <strong data-i18n="feedback"></strong>
+                                <p class="mb-0">{{ project.feedback }}</p>
                             </div>
-                        </td>
-                    </tr>
-                    {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endif %}
 
                 {% else %}
                     <tr>
-                        <td colspan="4" data-i18n="no_projects_feedback"></td>
+                        <td colspan="5" data-i18n="no_projects_feedback"></td>
                     </tr>
                 {% endfor %}
 

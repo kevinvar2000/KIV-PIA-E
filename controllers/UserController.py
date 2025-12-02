@@ -90,23 +90,23 @@ def administrator():
     """Administrator dashboard"""
     selected_state = request.args.get("state")
 
-    user_session = session.get('user')
-    if not user_session:
-        return redirect(url_for('auth_bp.login_page'))
+    # user_session = session.get('user')
+    # if not user_session:
+    #     return redirect(url_for('auth_bp.login_page'))
     
-    print("User session found:", user_session, flush=True)
+    # print("User session found:", user_session, flush=True)
 
-    user_data = UserService.get_user_by_name(user_session['name'])
+    # user_data = UserService.get_user_by_name(user_session['name'])
     
-    print("Rendering administrator dashboard for user:", user_data, flush=True)
+    # print("Rendering administrator dashboard for user:", user_data, flush=True)
+
+    states = ['all'] + [state.name for state in ProjectService.get_all_project_states()]
 
     projects = ProjectService.get_all_projects()
 
     ProjectService.check_feedbacks(projects)
 
-    states = ['all'] + [state.name.lower() for state in ProjectService.get_all_project_states()]
-
-    if selected_state and selected_state != 'all':
-        projects = [p for p in projects if p.state.name.lower() == selected_state]
+    if selected_state and selected_state != "ALL":
+        projects = [p for p in projects if str(p.get("state")) == selected_state]
 
     return render_template('pages/administrator.html', projects=projects, states=states, selected_state=selected_state)
