@@ -17,7 +17,23 @@ class ProjectService:
 
     @staticmethod
     def create_project(customer_id: str, project_name: str, description: str, target_language: str, source_file: _WSFileStorage) -> Project:
-        """Create a new project for a customer."""
+        """
+        Create a new translation project for a customer, persist the uploaded source file,
+        and attempt to auto-assign a translator based on the target language.
+        Parameters:
+            customer_id (str): Unique identifier of the customer creating the project. Must be a non-empty string.
+            project_name (str): Human-readable name of the project. Must be a non-empty string.
+            description (str): Description of the project. Must be a non-empty string.
+            target_language (str): Language code or name the project should be translated into. Must be a non-empty string.
+            source_file (_WSFileStorage): Uploaded file object containing the source content to translate. Must be provided
+                and its size must not exceed MAX_FILE_SIZE_MB.
+        Returns:
+            Project: The newly created Project instance. If a translator is available for the target language,
+            the translator is assigned; otherwise, the project state is set to CLOSED.
+        Raises:
+            ValueError: If any of the required string parameters are missing/invalid, if the source_file is not provided,
+            or if the source_file exceeds the maximum allowed size.
+        """
         if not customer_id or not isinstance(customer_id, str):
             raise ValueError("Customer ID must be a valid non-empty string.")
 
@@ -60,7 +76,21 @@ class ProjectService:
 
     @staticmethod
     def get_all_projects() -> list:
-        """Retrieve all projects."""
+        """
+        Retrieve all projects as plain serializable dictionaries.
+        This function fetches all project instances via `Project.get_all()` and
+        normalizes each item into a dictionary suitable for JSON serialization:
+        - If an item is already a `dict`, it is used as-is.
+        - If an item has a callable `to_dict()` method, that result is used.
+        - Otherwise, a dictionary is constructed from the object's `__dict__` via `vars()`.
+        For any `state` field that is an instance of `ProjectState`, the enum is converted
+        to its underlying `.value` to ensure compatibility with JSON encoders.
+        Returns:
+            list[dict]: A list of serialized project dictionaries with enum fields converted
+            to primitive values where applicable.
+        Raises:
+            AttributeError: If a non-dict, non-`to_dict` object lacks expected attributes.
+        """
         projects = Project.get_all()
 
         serialized = []
@@ -79,7 +109,20 @@ class ProjectService:
 
     @staticmethod
     def get_projects_by_user_id(user_id: str, role: str) -> list:
-        """Retrieve all projects for a given user ID."""
+        """
+        Retrieve all projects associated with a user based on their role.
+        Parameters:
+            user_id (str): The unique identifier of the user. Must be a non-empty string.
+            role (str): The role of the user in the project context. Supported values are:
+                - 'CUSTOMER': Fetch projects where the user is the customer.
+                - 'TRANSLATOR': Fetch projects where the user is the translator.
+        Returns:
+            list: A list of Project instances associated with the given user and role.
+        Raises:
+            ValueError: If `user_id` is not a valid non-empty string.
+            ValueError: If `role` is not a valid non-empty string.
+            ValueError: If `role` is not one of the supported values ('CUSTOMER', 'TRANSLATOR').
+        """
         if not user_id or not isinstance(user_id, str):
             raise ValueError("User ID must be a valid non-empty string.")
 
@@ -97,7 +140,15 @@ class ProjectService:
 
     @staticmethod
     def get_project_by_id(project_id: str) -> Project:
-        """Retrieve a project by its ID."""
+        """
+        Retrieve a project by its unique identifier.
+        Parameters:
+            project_id (str): The unique ID of the project to retrieve. Must be a non-empty string.
+        Returns:
+            Project: The project instance corresponding to the provided ID, or None if no such project exists.
+        Raises:
+            ValueError: If `project_id` is not a valid non-empty string.
+        """
         if not project_id or not isinstance(project_id, str):
             raise ValueError("Project ID must be a valid non-empty string.")
 
@@ -117,7 +168,20 @@ class ProjectService:
 
     @staticmethod
     def assign_translator_to_project(project_id: str, translator_id: str) -> None:
-        """Assign a translator to a project."""
+        """
+        Assign a translator to a project.
+        This function validates the provided project and translator identifiers,
+        then delegates the assignment to the underlying Project model.
+        Parameters:
+            project_id (str): Unique identifier of the project to which the translator will be assigned.
+            translator_id (str): Unique identifier of the translator to assign.
+        Raises:
+            ValueError: If `project_id` or `translator_id` is missing, empty, or not a string.
+        Returns:
+            None
+        Example:
+            assign_translator_to_project("proj_123", "trans_456")
+        """
 
         if not project_id or not isinstance(project_id, str):
             raise ValueError("Project ID must be a valid non-empty string.")
@@ -130,7 +194,20 @@ class ProjectService:
 
     @staticmethod
     def accept_translation(project_id: str) -> None:
-        """Accept the translation for a project."""
+        """
+        Accept the translation for a project by transitioning its state from COMPLETED to APPROVED.
+        This function validates the provided project ID, ensures the project is currently
+        in the COMPLETED state, and then updates its state to APPROVED. If validation fails
+        or the project is not in the correct state, a ValueError is raised.
+        Args:
+            project_id (str): The unique identifier of the project whose translation is being accepted.
+        Raises:
+            ValueError: If `project_id` is empty, not a string, or if the project's state is not COMPLETED.
+        Side Effects:
+            Updates the project's state in persistent storage to APPROVED.
+            # Potential future side effect:
+            # Notifies the translator of acceptance (currently commented out).
+        """
         if not project_id or not isinstance(project_id, str):
             raise ValueError("Project ID must be a valid non-empty string.")
 
@@ -145,7 +222,20 @@ class ProjectService:
 
     @staticmethod
     def reject_translation(project_id: str, feedback: str) -> None:
-        """Reject the translation for a project with feedback."""
+        """
+        Reject a completed project's translation with reviewer feedback.
+        Validates inputs, ensures the project is in the COMPLETED state, transitions it
+        to REJECTED, and stores or updates the provided feedback associated with the project.
+        Args:
+            project_id (str): Unique identifier of the project whose translation is being rejected.
+            feedback (str): Explanation or notes detailing the reason for rejection.
+        Raises:
+            ValueError: If `project_id` is empty or not a string.
+            ValueError: If `feedback` is empty or not a string.
+            ValueError: If the project's state is not COMPLETED.
+        Returns:
+            None
+        """
         if not project_id or not isinstance(project_id, str):
             raise ValueError("Project ID must be a valid non-empty string.")
 
@@ -173,7 +263,17 @@ class ProjectService:
 
     @staticmethod
     def close_project(project_id: str) -> None:
-        """Close a project."""
+        """
+        Close a project by setting its state to CLOSED.
+        Parameters:
+            project_id (str): Unique identifier of the project to close.
+        Raises:
+            ValueError: If `project_id` is empty or not a string.
+            ValueError: If the project is already closed.
+        Notes:
+            This function updates the project's state to CLOSED. A future enhancement
+            may include notifying users of the project closure.
+        """
         if not project_id or not isinstance(project_id, str):
             raise ValueError("Project ID must be a valid non-empty string.")
 
@@ -188,6 +288,22 @@ class ProjectService:
 
     @staticmethod
     def get_original_file(project_id: str) -> tuple[str, str]:
+        """
+        Retrieve the path and original filename for a project's uploaded file.
+        This method validates the provided project ID, fetches the associated original
+        file identifier from the data layer, constructs the absolute file path in the
+        original-files directory, and extracts the human-readable filename by removing
+        the internal prefix/separator.
+        Parameters:
+            project_id (str): The unique identifier of the project. Must be a non-empty string.
+        Returns:
+            tuple[str, str]: A tuple containing:
+                - file_path (str): The absolute path to the original file on disk.
+                - filename (str): The original filename as presented to users (without internal prefix).
+        Raises:
+            ValueError: If `project_id` is empty or not a string.
+            ValueError: If no original file is found for the given `project_id`.
+        """
         if not project_id or not isinstance(project_id, str):
             raise ValueError("Project ID must be a valid non-empty string.")
         
@@ -202,6 +318,21 @@ class ProjectService:
         return file_path, filename
 
     def get_translated_file(project_id: str) -> tuple[str, str]:
+        """
+        Retrieve the full filesystem path and original filename of a project's translated file.
+        This function validates the provided project ID, locates the translated file
+        associated with that project, and returns both the absolute path to the file
+        and the original filename (excluding any internal prefixes used for storage).
+        Parameters:
+            project_id (str): The unique identifier of the project. Must be a non-empty string.
+        Returns:
+            tuple[str, str]: A tuple containing:
+                - file_path (str): The full path to the translated file on disk.
+                - filename (str): The original filename extracted from the stored file name.
+        Raises:
+            ValueError: If `project_id` is not a valid non-empty string.
+            ValueError: If no translated file is found for the given project ID.
+        """
         if not project_id or not isinstance(project_id, str):
             raise ValueError("Project ID must be a valid non-empty string.")
         
@@ -218,7 +349,22 @@ class ProjectService:
 
     @staticmethod
     def save_translated_file(project_id: str, translated_file: _WSFileStorage) -> None:
-        """Save the translated file for a project."""
+        """
+        Save a translated file for the specified project and update its state to COMPLETED.
+        This function validates the input parameters, ensures the uploaded file does not exceed
+        the maximum allowed size, and checks that the project is in a valid state (ASSIGNED or REJECTED)
+        for accepting a translated file. It then persists the file to storage, updates the project's
+        record with the stored filename, and sets the project state to COMPLETED.
+        Parameters:
+            project_id (str): The unique identifier of the project. Must be a non-empty string.
+            translated_file (_WSFileStorage): The uploaded file object containing the translated content.
+        Raises:
+            ValueError: If `project_id` is empty or not a string.
+            ValueError: If `translated_file` is None.
+            ValueError: If `translated_file` exceeds the maximum allowed size.
+            ValueError: If the project's state is not ASSIGNED or REJECTED.
+            ValueError: If the project cannot be found.
+        """
         if not project_id or not isinstance(project_id, str):
             raise ValueError("Project ID must be a valid non-empty string.")
 
@@ -249,7 +395,24 @@ class ProjectService:
 
     @staticmethod
     def check_feedbacks(projects: list) -> None:
-        """Check projects for rejected status and print feedbacks."""
+        """
+        Check a collection of projects for a rejected state and attach feedback.
+        This function iterates over a list of projects, which can be either serialized
+        dicts or model instances. For each project that is in the REJECTED state, it
+        retrieves feedback via Project.get_feedback(project_id). If feedback exists,
+        it is added to the project:
+        - For dict projects, the "feedback" key is set.
+        - For model instances, the feedback attribute is set.
+        If feedback cannot be retrieved (e.g., Project.get_feedback raises ValueError),
+        the feedback is set to None.
+        Parameters:
+            projects (list): A list of project representations. Each element may be:
+                - dict with keys "id" and "state"
+                - a model instance with attributes `id` and `state` (where `state` may be
+                  a ProjectState enum or its raw value)
+        Returns:
+            None: The function mutates the provided project objects in place.
+        """
         for project in projects:
             # Support both dicts (serialized projects) and model objects
             if isinstance(project, dict):
@@ -277,5 +440,15 @@ class ProjectService:
     
     @staticmethod
     def get_all_project_states() -> list:
+        """
+        Retrieve all available project states.
+
+        This utility function returns every value defined in the ProjectState enum,
+        allowing callers to iterate, validate, or present the full set of possible
+        states for a project.
+
+        Returns:
+            list[ProjectState]: A list containing all members of the ProjectState enum.
+        """
         """Retrieve all possible project states."""
         return list(ProjectState)

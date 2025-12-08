@@ -2,7 +2,7 @@ from models.DatabaseConnector import DatabaseConnector
 from dotenv import load_dotenv
 import os
 
-load_dotenv()  # make sure .env values are loaded
+load_dotenv()
 
 db = DatabaseConnector(
     host=os.getenv('DATABASE_HOST', 'localhost'),
