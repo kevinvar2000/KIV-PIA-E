@@ -11,11 +11,12 @@ user_bp = Blueprint('user_bp', __name__)
 @user_bp.route('/users', methods=['POST'])
 def create_user():
     """API endpoint to create a new user."""
-    name = request.form.get('name')
-    email = request.form.get('email')
-    password = request.form.get('password')
-    role = request.form.get('role')
-    languages = request.form.get('languages', [])
+    data = request.get_json()
+    name = data.get('name')
+    email = data.get('email')
+    password = data.get('password')
+    role = data.get('role')
+    languages = data.get('languages', [])
 
     try:
         hashed_password = AuthService.hash_password(password)
