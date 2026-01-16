@@ -1,12 +1,12 @@
 from flask import Flask
 from router import register_routes
-from models.db import db
+from models.db import db, create_db_connection
 import secrets
 import os
 
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
-def create_app():
+def create_app(config=None):
     """
     Create and configure the Flask application instance.
     This factory function initializes a new Flask app, generates a secure
@@ -19,6 +19,10 @@ def create_app():
     app = Flask(__name__)
     app.secret_key = secrets.token_hex(32)
 
+    if config:
+        app.config.update(config)
+
+    create_db_connection()
     db.connect()
     
     register_routes(app)
