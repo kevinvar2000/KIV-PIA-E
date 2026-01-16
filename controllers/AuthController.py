@@ -32,7 +32,17 @@ def login_page():
     if session.get('user'):
         return redirect(url_for('app_bp.home'))
 
-    return render_template('auth/login.html')
+    if not google.authorized:
+        # Check Google OAuth availability (env + route present)
+        if os.getenv('GOOGLE_CLIENT_ID') and os.getenv('GOOGLE_CLIENT_SECRET'):
+            try:
+                url_for('google.login')
+                return render_template('auth/login.html', google_enabled=True)
+            except Exception:
+                pass
+        return render_template('auth/login.html', google_enabled=False)
+
+    return render_template('auth/login.html', google_enabled=True)
 
 
 @auth_bp.route('/api/login', methods=['POST'])

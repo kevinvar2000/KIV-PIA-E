@@ -7,6 +7,7 @@
     "login_password": "Heslo",
     "login_button": "Prihlásiť sa",
     "login_with_google": "Prihlásiť sa cez Google",
+    "login_google_disabled": "Prihlásenie cez Google je momentálne vypnuté.",
     "login_no_account": "Nemáte účet? Zaregistrujte sa tu.",
     "alert_success": "Úspech!",
     "alert_error": "Chyba!",
