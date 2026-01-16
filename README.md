@@ -1,5 +1,10 @@
 # Project Setup
 
+## Git repository
+
+- Repository URL: https://github.com/kevinvar2000/KIV-PIA-E
+
+
 ## 1) Create a .env file
 
 Copy .env.example to .env:
