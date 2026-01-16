@@ -79,6 +79,7 @@
 
                         <td class="text-end">
                             <div class="d-flex flex-wrap gap-2 justify-content-start">
+                                <button class="btn btn-primary btn-sm" onclick="openMessageModal('{{ project.id }}', '{{ project.customer_id }}', '{{ project.translator_id }}')" data-i18n="message"></button>
 
                                 {% if state != 'CLOSED' %}
                                     <button class="btn btn-danger btn-sm" onclick="closeProject('{{ project.id }}')" data-i18n="mark_closed"></button>
@@ -116,6 +117,9 @@
 </div>
 {% endblock %}
 
+{% include "components/message_modal.html" %}
+
 {% block extra_js %}
 <script src="{{ url_for('static', filename='js/project.js') }}"></script>
+<script src="{{ url_for('static', filename='js/message_modal.js') }}"></script>
 {% endblock %}

@@ -1,0 +1,43 @@
+<div class="modal fade" id="messageModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h5 class="modal-title" data-i18n="send_message"></h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <div id="messageModalAlert" class="alert d-none" role="alert"></div>
+
+        <input type="hidden" id="mmProjectId" value="">
+        <input type="hidden" id="mmCustomerId" value="">
+        <input type="hidden" id="mmTranslatorId" value="">
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label for="mmRecipientType" class="form-label" data-i18n="recipient"></label>
+            <select id="mmRecipientType" class="form-select form-select-sm">
+              <option value="CUSTOMER" data-i18n="customer"></option>
+              <option value="TRANSLATOR" data-i18n="translator"></option>
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label for="mmSubject" class="form-label" data-i18n="subject"></label>
+            <input id="mmSubject" type="text" class="form-control form-control-sm" placeholder="Subject">
+          </div>
+
+          <div class="col-12">
+            <label for="mmBody" class="form-label" data-i18n="message"></label>
+            <textarea id="mmBody" class="form-control" rows="6" placeholder="Type your message..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal" data-i18n="cancel"></button>
+        <button type="button" class="btn btn-primary" id="mmSendBtn" data-i18n="send"></button>
+      </div>
+    </div>
+  </div>
+</div>

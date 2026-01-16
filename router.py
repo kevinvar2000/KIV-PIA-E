@@ -1,6 +1,7 @@
 from controllers.AuthController import auth_bp, google_bp
 from controllers.UserController import user_bp
 from controllers.ProjectController import proj_bp
+from controllers.EmailController import email_bp
 from flask import Blueprint, redirect, url_for, session
 
 
@@ -26,6 +27,7 @@ def register_routes(app):
     app.register_blueprint(google_bp, url_prefix='/login')
     app.register_blueprint(user_bp, url_prefix='/api')
     app.register_blueprint(proj_bp, url_prefix='/api')
+    app.register_blueprint(email_bp, url_prefix='/api')
 
 
 app_bp = Blueprint('app_bp', __name__)

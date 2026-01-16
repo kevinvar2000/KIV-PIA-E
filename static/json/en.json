@@ -54,6 +54,7 @@
     "filter": "Filter",
     "show_feedback": "Show Feedback",
     "no_feedback": "No feedback available.",
+    "message": "Message",
     "mark_closed": "Mark as Closed",
     "closed": "Closed",
     "no_projects_feedback": "No projects available.",
