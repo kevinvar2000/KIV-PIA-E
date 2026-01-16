@@ -52,8 +52,6 @@
     sendBtn.disabled = true;
 
     try {
-      // Adjust this route to match your EmailController.
-      // Example: /api/email/send-admin-message
       const res = await fetch("/api/email/respond", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -86,10 +84,8 @@
     }
   }
 
-  // send button handler
   sendBtn.addEventListener("click", sendEmail);
 
-  // expose global for inline onclick
   window.openMessageModal = function (projectId, customerId, translatorId) {
     clearAlert();
 

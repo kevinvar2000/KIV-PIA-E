@@ -5,10 +5,6 @@ import pytest
 from datetime import datetime
 
 
-# ---------------------------
-# Hard-set DB env for tests
-# (must be before importing models.db / models.Project)
-# ---------------------------
 os.environ["DATABASE_HOST"] = os.getenv("TEST_DATABASE_HOST", "127.0.0.1")
 os.environ["DATABASE_USER"] = os.getenv("TEST_DATABASE_USER", "pia_user")
 os.environ["DATABASE_PASSWORD"] = os.getenv("TEST_DATABASE_PASSWORD", "pia_password")
@@ -92,7 +88,6 @@ def test_project_create_project_persists_row(ctx, created_ids):
     Project = ctx["Project"]
     ProjectState = ctx["ProjectState"]
 
-    # Create a real customer row for FK(customerId -> Users.id)
     customer_id = str(uuid.uuid4())
     _insert_user(db, customer_id, "it_customer", "it_customer@example.com", "customer")
     created_ids["user_ids"].append(customer_id)
@@ -124,7 +119,6 @@ def test_project_assign_translator_persists_update(ctx, created_ids):
     Project = ctx["Project"]
     ProjectState = ctx["ProjectState"]
 
-    # Create FK-required users: customer + translator
     customer_id = str(uuid.uuid4())
     translator_id = str(uuid.uuid4())
 
@@ -142,7 +136,6 @@ def test_project_assign_translator_persists_update(ctx, created_ids):
     )
     created_ids["project_ids"].append(created.id)
 
-    # Assign translator and verify DB persisted update
     Project.assign_translator(created.id, translator_id)
 
     row = _select_project_row(db, created.id)

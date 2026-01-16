@@ -8,7 +8,6 @@ from pathlib import Path
 os.environ.setdefault("GOOGLE_CLIENT_ID", "test-client-id")
 os.environ.setdefault("GOOGLE_CLIENT_SECRET", "test-client-secret")
 
-# Add project root to sys.path (so imports work when running pytest from anywhere)
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from app import create_app
@@ -21,7 +20,6 @@ def client():
 
 
 def test_api_login_success_sets_session_and_returns_role(client, monkeypatch):
-    # Import inside test so monkeypatch targets resolve reliably
     from services.AuthService import AuthService
 
     def fake_authenticate_user(name, password):
@@ -36,7 +34,6 @@ def test_api_login_success_sets_session_and_returns_role(client, monkeypatch):
     assert resp.is_json
     assert resp.get_json() == {"status": "success", "role": "CUSTOMER"}
 
-    # Verify session was set
     with client.session_transaction() as sess:
         assert "user" in sess
         assert sess["user"]["user_id"] == "u-1"
@@ -63,10 +60,6 @@ def test_api_login_failure_returns_401_and_does_not_set_session(client, monkeypa
 
 
 def test_api_login_missing_json_returns_400(client):
-    # request.get_json() will be None -> data.get(...) will raise
-    # Flask will respond 400 or 500 depending on config/error handlers.
-    # In TESTING, it is usually 400 if you have error handling; otherwise it can be 500.
-    # If you want strict 400, add validation in api_login.
     resp = client.post("/auth/api/login", data="not-json", content_type="text/plain")
     assert resp.status_code in (400, 415, 500)
 
@@ -118,7 +111,6 @@ def test_api_register_defaults_languages_to_empty_list(client, monkeypatch):
         return "HASHED_PASS"
 
     def fake_register_user(name, email, hashed_password, role, languages):
-        # languages must default to []
         assert languages == []
 
     monkeypatch.setattr(AuthService, "hash_password", staticmethod(fake_hash_password))
@@ -139,7 +131,6 @@ def test_api_register_defaults_languages_to_empty_list(client, monkeypatch):
 
 
 def test_api_logout_clears_session_and_returns_200(client):
-    # First, set session as if logged in
     with client.session_transaction() as sess:
         sess["user"] = {"user_id": "u-1", "name": "kevin", "email": "k@e.com", "role": "CUSTOMER"}
 

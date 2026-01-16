@@ -46,7 +46,6 @@ async function uploadTranslatedFile(projectId) {
         return;
     }
 
-    // check max file size (10 MB)
     const MAX_FILE_SIZE = 10 * 1024 * 1024;
     if (file.size > MAX_FILE_SIZE) {
         showAlert("error", "File exceeds the maximum size of 10 MB.");
@@ -79,7 +78,7 @@ async function acceptProject(projectId) {
         const response = await fetch(`/api/project/${projectId}/accept`, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"  // optional, backend may ignore
+                "Content-Type": "application/json"
             }
         });
 
@@ -92,7 +91,6 @@ async function acceptProject(projectId) {
 
         showAlert("success", data.message || "Project accepted!");
 
-        // Optional: refresh after delay
         setTimeout(() => location.reload(), 1200);
 
     } catch (err) {
@@ -133,7 +131,6 @@ async function rejectProject(projectId) {
 
         showAlert("success", data.message || "Project rejected.");
 
-        // Optional reload
         setTimeout(() => location.reload(), 1200);
 
     } catch (err) {
@@ -148,7 +145,7 @@ async function closeProject(projectId) {
         const response = await fetch(`/api/project/${projectId}/close`, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"  // optional, backend may ignore
+                "Content-Type": "application/json"
             }
         });
         const data = await response.json();
@@ -158,7 +155,6 @@ async function closeProject(projectId) {
         }
         showAlert("success", data.message || "Project closed successfully!");
 
-        // Optional: refresh after delay
         setTimeout(() => location.reload(), 1200);
     } catch (err) {
         console.error("Close project error:", err);
@@ -168,7 +164,7 @@ async function closeProject(projectId) {
 
 
 async function createProject(event) {
-    event.preventDefault(); // stop full reload
+    event.preventDefault();
 
     const name = document.getElementById("project_name").value.trim();
     const description = document.getElementById("description").value.trim();
@@ -180,7 +176,6 @@ async function createProject(event) {
         return;
     }
 
-    // check max file size (10 MB)
     const MAX_FILE_SIZE = 10 * 1024 * 1024;
     if (sourceFile.size > MAX_FILE_SIZE) {
         showAlert("error", "Source file exceeds the maximum size of 10 MB.");
@@ -208,7 +203,6 @@ async function createProject(event) {
 
         showAlert("success", data.message || "Project created successfully!");
 
-        // Optional reload after creation
         setTimeout(() => window.location.reload(), 1200);
 
     } catch (err) {

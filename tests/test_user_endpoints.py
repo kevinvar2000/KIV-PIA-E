@@ -8,7 +8,6 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-# Keep consistent with your other tests
 os.environ["DATABASE_HOST"] = "127.0.0.1"
 os.environ["DATABASE_USER"] = "pia_user"
 os.environ["DATABASE_PASSWORD"] = "pia_password"

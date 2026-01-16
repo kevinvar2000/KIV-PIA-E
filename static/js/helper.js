@@ -7,7 +7,6 @@ function toggleLanguages() {
 document.addEventListener("DOMContentLoaded", function() {
     $('#id_languages').selectpicker();
 
-    // Optional: show selected languages below
     $('#id_languages').on('changed.bs.select', function () {
     let selected = $(this).find("option:selected").map(function(){ return $(this).text(); }).get();
     document.getElementById("selected-languages-text").textContent = 

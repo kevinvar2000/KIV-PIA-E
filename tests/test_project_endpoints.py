@@ -6,7 +6,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-# Force DB env BEFORE importing models.db (models/db.py calls load_dotenv on import)
 os.environ["DATABASE_HOST"] = "127.0.0.1"
 os.environ["DATABASE_USER"] = "pia_user"
 os.environ["DATABASE_PASSWORD"] = "pia_password"
@@ -24,13 +23,11 @@ def _client():
 
 
 def _set_session(client, user_id: str, name: str, email: str, role_session: str):
-    # MUST match your auth controller: session['user']['user_id']
     with client.session_transaction() as sess:
         sess["user"] = {"user_id": user_id, "name": name, "email": email, "role": role_session}
 
 
 def _make_unique_identity(prefix: str):
-    # Always unique => no ON DUPLICATE KEY collisions => FK-safe
     suffix = uuid.uuid4().hex[:10]
     name = f"{prefix}_{suffix}"
     email = f"{name}@example.com"
@@ -86,15 +83,12 @@ def test_project_create_requires_login():
 def test_translator_cannot_create_project():
     client, _ = _client()
 
-    # DB row (role_db must be valid for your Users.role)
     tid = str(uuid.uuid4())
     t_name, t_email = _make_unique_identity("translator")
-    _insert_user(tid, t_name, t_email, password_hash="x", role_db="TRANSLATOR")  # adjust if DB enum differs
+    _insert_user(tid, t_name, t_email, password_hash="x", role_db="TRANSLATOR")
 
-    # Session role must match @require_role('TRANSLATOR') checks
     _set_session(client, tid, t_name, t_email, role_session="TRANSLATOR")
 
-    # Attempt to create project (should be forbidden because endpoint requires CUSTOMER)
     with open("tests/test_files/sample.txt", "rb") as f:
         resp = client.post(
             "/api/projects",
@@ -114,7 +108,7 @@ def test_customer_can_create_project():
 
     cid = str(uuid.uuid4())
     c_name, c_email = _make_unique_identity("customer")
-    _insert_user(cid, c_name, c_email, password_hash="x", role_db="CUSTOMER")  # adjust if DB enum differs
+    _insert_user(cid, c_name, c_email, password_hash="x", role_db="CUSTOMER")
 
     _set_session(client, cid, c_name, c_email, role_session="CUSTOMER")
 
@@ -130,9 +124,8 @@ def test_admin_sees_all_projects():
 
     aid = str(uuid.uuid4())
     a_name, a_email = _make_unique_identity("admin")
-    _insert_user(aid, a_name, a_email, password_hash="x", role_db="ADMINISTRATOR")  # adjust if DB enum differs
+    _insert_user(aid, a_name, a_email, password_hash="x", role_db="ADMINISTRATOR")
 
-    # IMPORTANT: session role must be exactly "ADMIN" to pass @require_role('ADMIN', 'TRANSLATOR')
     _set_session(client, aid, a_name, a_email, role_session="ADMIN")
 
     resp = client.get("/api/projects")

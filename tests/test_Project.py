@@ -419,13 +419,10 @@ def test_from_result_missing_and_invalid_values():
 
     assert len(projects) == 1
     p = projects[0]
-    # customer_id and language should fallback to ''
     assert p.customer_id == ""
     assert p.language == ""
     assert p.translator_id is None
     assert p.original_file is None
     assert p.translated_file is None
-    # invalid state falls back to CREATED
     assert p.state == ProjectState.CREATED
-    # created_at should be set by __init__, not overridden to None
     assert isinstance(p.created_at, datetime)

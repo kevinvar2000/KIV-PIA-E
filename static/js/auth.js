@@ -1,6 +1,5 @@
 $(document).ready(function() {
 
-    // ✅ 1. Helper to parse selected languages (from visible text or select input)
     const parseLanguages = () => {
 
         // get selected options if using <select multiple>
@@ -18,8 +17,7 @@ $(document).ready(function() {
             .filter(Boolean);
     };
 
-    // ✅ 2. Show/hide languages section when role changes
-    const $languagesContainer = $("#languages-container"); // corrected element reference
+    const $languagesContainer = $("#languages-container");
     const toggleLanguages = () => {
     
         const role = ($("#id_role").val() || "CUSTOMER").toUpperCase();
@@ -29,7 +27,6 @@ $(document).ready(function() {
     toggleLanguages();
     $("#id_role").on("change", toggleLanguages);
 
-    // ✅ 3. Register form submit
     $("#registerForm").on("submit", function(e) {
 
         e.preventDefault();
@@ -71,7 +68,6 @@ $(document).ready(function() {
         });
     });
 
-    // ✅ 4. Login form submit
     $("#loginForm").on("submit", function(e) {
         e.preventDefault();
 
