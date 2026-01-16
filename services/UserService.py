@@ -25,18 +25,23 @@ class UserService:
         """
 
         if role not in ['CUSTOMER', 'TRANSLATOR']:
+            print(f"[UserService.py] Invalid role provided: {role}", flush=True)
             raise ValueError("Role must be either 'CUSTOMER' or 'TRANSLATOR'.")
 
         if not name or not isinstance(name, str):
+            print(f"[UserService.py] Invalid name provided: {name}", flush=True)
             raise ValueError("Name must be a valid non-empty string.")
 
         if not hashed_password or not isinstance(hashed_password, str):
+            print(f"[UserService.py] Invalid hashed_password provided.", flush=True)
             raise ValueError("Hashed password must be a valid non-empty string.")
 
         if not email or not isinstance(email, str) or "@" not in email:
+            print(f"[UserService.py] Invalid email provided: {email}", flush=True)
             raise ValueError("Email must be a valid non-empty string.")
         
         if role == 'TRANSLATOR' and (not languages or not isinstance(languages, list)) and len(languages) > 0:
+            print(f"[UserService.py] Invalid languages provided for TRANSLATOR: {languages}", flush=True)
             raise ValueError("Languages must be a valid list of language codes for TRANSLATOR role.")
 
         user = User.create_customer(name, email, hashed_password) if role == 'CUSTOMER' else User.create_translator(name, email, hashed_password, languages)
@@ -58,6 +63,7 @@ class UserService:
         user_data = User.get_user_by_name(name)
 
         if not user_data:
+            print(f"[UserService.py] No user found with name: {name}", flush=True)
             return None
 
         return user_data
@@ -77,6 +83,7 @@ class UserService:
         user_data = User.get_user_by_email(email)
 
         if not user_data:
+            print(f"[UserService.py] No user found with email: {email}", flush=True)
             return None
 
         return user_data
@@ -112,6 +119,7 @@ class UserService:
         """
 
         if not user_id or not isinstance(user_id, str):
+            print(f"[UserService.py] Invalid user_id provided: {user_id}", flush=True)
             raise ValueError("User ID must be a valid non-empty string.")
 
         user = User.get_user_by_id(user_id)
@@ -139,7 +147,9 @@ class UserService:
             [<UserTranslator id=1 ...>, <UserTranslator id=7 ...>]
         """
         """Retrieve all translators proficient in a given language."""
+
         if not language_code or not isinstance(language_code, str):
+            print(f"[UserService.py] Invalid language_code provided: {language_code}", flush=True)
             raise ValueError("Language code must be a valid non-empty string.")
 
         translators = User.get_translators_by_language(language_code)
@@ -177,6 +187,7 @@ class UserService:
             AttributeError: If required attributes or methods are missing from the user.
             ValueError: If fields cannot be serialized (e.g., invalid datetime).
         """
+
         return {
             'id': str(user.id),
             'name': user.name,

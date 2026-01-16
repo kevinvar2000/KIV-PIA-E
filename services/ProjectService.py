@@ -35,22 +35,29 @@ class ProjectService:
             ValueError: If any of the required string parameters are missing/invalid, if the source_file is not provided,
             or if the source_file exceeds the maximum allowed size.
         """
+
         if not customer_id or not isinstance(customer_id, str):
+            print(f"[ProjectService.py] Invalid customer_id provided: {customer_id}", flush=True)
             raise ValueError("Customer ID must be a valid non-empty string.")
 
         if not project_name or not isinstance(project_name, str):
+            print(f"[ProjectService.py] Invalid project_name provided: {project_name}", flush=True)
             raise ValueError("Project name must be a valid non-empty string.")
 
         if not description or not isinstance(description, str):
+            print(f"[ProjectService.py] Invalid description provided: {description}", flush=True)
             raise ValueError("Description must be a valid non-empty string.")
 
         if not target_language or not isinstance(target_language, str):
+            print(f"[ProjectService.py] Invalid target_language provided: {target_language}", flush=True)
             raise ValueError("Target language must be a valid non-empty string.")
 
         if source_file is None:
+            print(f"[ProjectService.py] Source file is required.", flush=True)
             raise ValueError("Source file is required.")
         
         if source_file.content_length > MAX_FILE_SIZE_MB * 1024 * 1024:
+            print(f"[ProjectService.py] Source file exceeds maximum size: {source_file.content_length} bytes", flush=True)
             raise ValueError(f"Source file exceeds the maximum allowed size of {MAX_FILE_SIZE_MB} MB.")
 
         filename = str(customer_id) + ProjectService.FILENAME_SEPARATOR + source_file.filename
@@ -63,7 +70,7 @@ class ProjectService:
         translators = UserService.get_translators_by_language(target_language)
         if translators:
             translator = translators[0]
-            print(f"Assigning translator {translator.id} to project {project.id}", flush=True)
+            print(f"[ProjectService.py] Assigning translator {translator.id} to project {project.id}", flush=True)
             Project.assign_translator(project.id, translator.id)
 
             EmailService.send_email(
@@ -72,7 +79,7 @@ class ProjectService:
                 body=f"You have been assigned to translate the project '{project_name}' into {target_language}."
             )
         else:
-            print(f"No translators available for language: {target_language}", flush=True)
+            print(f"[ProjectService.py] No translators available for language: {target_language}", flush=True)
             project.update_state(project.id, ProjectState.CLOSED.value)
 
             EmailService.send_email(
@@ -100,6 +107,7 @@ class ProjectService:
         Raises:
             AttributeError: If a non-dict, non-`to_dict` object lacks expected attributes.
         """
+
         projects = Project.get_all()
 
         serialized = []
@@ -132,10 +140,13 @@ class ProjectService:
             ValueError: If `role` is not a valid non-empty string.
             ValueError: If `role` is not one of the supported values ('CUSTOMER', 'TRANSLATOR').
         """
+
         if not user_id or not isinstance(user_id, str):
+            print(f"[ProjectService.py] Invalid user_id provided: {user_id}", flush=True)
             raise ValueError("User ID must be a valid non-empty string.")
 
         if not role or not isinstance(role, str):
+            print(f"[ProjectService.py] Invalid role provided: {role}", flush=True)
             raise ValueError("Role must be a valid non-empty string.")
 
         if role == 'CUSTOMER':
@@ -143,6 +154,7 @@ class ProjectService:
         elif role == 'TRANSLATOR':
             projects = Project.get_by_user_id(user_id, "translatorId")
         else:
+            print(f"[ProjectService.py] Unsupported role provided: {role}", flush=True)
             raise ValueError("Invalid role specified.")
 
         return projects
@@ -158,7 +170,9 @@ class ProjectService:
         Raises:
             ValueError: If `project_id` is not a valid non-empty string.
         """
+
         if not project_id or not isinstance(project_id, str):
+            print(f"[ProjectService.py] Invalid project_id provided: {project_id}", flush=True)
             raise ValueError("Project ID must be a valid non-empty string.")
 
         project = Project.get_by_id(project_id)
@@ -167,10 +181,13 @@ class ProjectService:
     @staticmethod
     def update_project_status(project_id: str, status: str) -> None:
         """Update the status of a project."""
+
         if not project_id or not isinstance(project_id, str):
+            print(f"[ProjectService.py] Invalid project_id provided: {project_id}", flush=True)
             raise ValueError("Project ID must be a valid non-empty string.")
 
         if not status or not isinstance(status, str):
+            print(f"[ProjectService.py] Invalid status provided: {status}", flush=True)
             raise ValueError("Status must be a valid non-empty string.")
 
         Project.update_state(project_id, status)
@@ -193,9 +210,11 @@ class ProjectService:
         """
 
         if not project_id or not isinstance(project_id, str):
+            print(f"[ProjectService.py] Invalid project_id provided: {project_id}", flush=True)
             raise ValueError("Project ID must be a valid non-empty string.")
 
         if not translator_id or not isinstance(translator_id, str):
+            print(f"[ProjectService.py] Invalid translator_id provided: {translator_id}", flush=True)
             raise ValueError("Translator ID must be a valid non-empty string.")
 
         Project.assign_translator(project_id, translator_id)
@@ -217,11 +236,14 @@ class ProjectService:
             # Potential future side effect:
             # Notifies the translator of acceptance (currently commented out).
         """
+
         if not project_id or not isinstance(project_id, str):
+            print(f"[ProjectService.py] Invalid project_id provided: {project_id}", flush=True)
             raise ValueError("Project ID must be a valid non-empty string.")
 
         state = Project.get_state(project_id)
         if state != ProjectState.COMPLETED:
+            print(f"[ProjectService.py] Project {project_id} is not in COMPLETED state: {state}", flush=True)
             raise ValueError("Only projects in COMPLETED state can be accepted.")
 
         Project.update_state(project_id, ProjectState.APPROVED.value)
@@ -252,13 +274,16 @@ class ProjectService:
             None
         """
         if not project_id or not isinstance(project_id, str):
+            print(f"[ProjectService.py] Invalid project_id provided: {project_id}", flush=True)
             raise ValueError("Project ID must be a valid non-empty string.")
 
         if not feedback or not isinstance(feedback, str):
+            print(f"[ProjectService.py] Invalid feedback provided: {feedback}", flush=True)
             raise ValueError("Feedback must be a valid non-empty string.")
 
         state = Project.get_state(project_id)
         if state != ProjectState.COMPLETED:
+            print(f"[ProjectService.py] Project {project_id} is not in COMPLETED state: {state}", flush=True)
             raise ValueError("Only projects in COMPLETED state can be rejected.")
 
         Project.update_state(project_id, ProjectState.REJECTED.value)
@@ -295,11 +320,14 @@ class ProjectService:
             This function updates the project's state to CLOSED. A future enhancement
             may include notifying users of the project closure.
         """
+
         if not project_id or not isinstance(project_id, str):
+            print(f"[ProjectService.py] Invalid project_id provided: {project_id}", flush=True)
             raise ValueError("Project ID must be a valid non-empty string.")
 
         state = Project.get_state(project_id)
         if state == ProjectState.CLOSED:
+            print(f"[ProjectService.py] Project {project_id} is already closed.", flush=True)
             raise ValueError("Project is already closed.")
 
         Project.update_state(project_id, ProjectState.CLOSED.value)
@@ -331,11 +359,14 @@ class ProjectService:
             ValueError: If `project_id` is empty or not a string.
             ValueError: If no original file is found for the given `project_id`.
         """
+
         if not project_id or not isinstance(project_id, str):
+            print(f"[ProjectService.py] Invalid project_id provided: {project_id}", flush=True)
             raise ValueError("Project ID must be a valid non-empty string.")
         
         file = Project.get_original_file(project_id)
         if not file:
+            print(f"[ProjectService.py] Original file not found for project_id: {project_id}", flush=True)
             raise ValueError("Original file not found.")
         
         file_path = os.path.join(ProjectService.ORIGINAL_FILES_FOLDER, file)
@@ -360,11 +391,14 @@ class ProjectService:
             ValueError: If `project_id` is not a valid non-empty string.
             ValueError: If no translated file is found for the given project ID.
         """
+
         if not project_id or not isinstance(project_id, str):
+            print(f"[ProjectService.py] Invalid project_id provided: {project_id}", flush=True)
             raise ValueError("Project ID must be a valid non-empty string.")
         
         file = Project.get_translated_file(project_id)
         if not file:
+            print(f"[ProjectService.py] Translated file not found for project_id: {project_id}", flush=True)
             raise ValueError("Translated file not found.")
         
         file_path =  os.path.join(ProjectService.TRANSLATED_FILES_FOLDER, file)
@@ -392,17 +426,22 @@ class ProjectService:
             ValueError: If the project's state is not ASSIGNED or REJECTED.
             ValueError: If the project cannot be found.
         """
+
         if not project_id or not isinstance(project_id, str):
+            print(f"[ProjectService.py] Invalid project_id provided: {project_id}", flush=True)
             raise ValueError("Project ID must be a valid non-empty string.")
 
         if translated_file is None:
+            print(f"[ProjectService.py] Translated file is required.", flush=True)
             raise ValueError("Translated file is required.")
 
         if translated_file.content_length > MAX_FILE_SIZE_MB * 1024 * 1024:
+            print(f"[ProjectService.py] Translated file exceeds maximum size: {translated_file.content_length} bytes", flush=True)
             raise ValueError(f"Translated file exceeds the maximum allowed size of {MAX_FILE_SIZE_MB} MB.")
 
         state = Project.get_state(project_id)
         if state != ProjectState.ASSIGNED and state != ProjectState.REJECTED:
+            print(f"[ProjectService.py] Project {project_id} is not in ASSIGNED or REJECTED state: {state}", flush=True)
             raise ValueError("Cannot upload translated file for a project that is not in ASSIGNED or REJECTED state.")
     
         filename = str(project_id) + ProjectService.FILENAME_SEPARATOR + translated_file.filename
@@ -412,6 +451,7 @@ class ProjectService:
 
         project = Project.get_by_id(project_id)
         if not project:
+            print(f"[ProjectService.py] Project not found for project_id: {project_id}", flush=True)
             raise ValueError("Project not found.")
 
         Project.save_translated_file(project_id, filename)
@@ -444,6 +484,7 @@ class ProjectService:
         Returns:
             None: The function mutates the provided project objects in place.
         """
+
         for project in projects:
             # Support both dicts (serialized projects) and model objects
             if isinstance(project, dict):
@@ -461,6 +502,7 @@ class ProjectService:
                 try:
                     feedback = Project.get_feedback(pid)
                 except ValueError:
+                    print(f"[ProjectService.py] Invalid feedback provided for project_id: {pid}", flush=True)
                     feedback = None
 
                 if isinstance(project, dict):
@@ -482,4 +524,5 @@ class ProjectService:
             list[ProjectState]: A list containing all members of the ProjectState enum.
         """
         """Retrieve all possible project states."""
+
         return list(ProjectState)

@@ -30,6 +30,7 @@ def login_page():
     """
 
     if session.get('user'):
+        print(f"[AuthController.py] User already logged in: {session['user']['name']}", flush=True)
         return redirect(url_for('app_bp.home'))
 
     if not google.authorized:
@@ -39,6 +40,7 @@ def login_page():
                 url_for('google.login')
                 return render_template('auth/login.html', google_enabled=True)
             except Exception:
+                print(f"[AuthController.py] Google OAuth route not available.", flush=True)
                 pass
         return render_template('auth/login.html', google_enabled=False)
 
@@ -65,6 +67,7 @@ def api_login():
         session['user'] = { 'user_id': user.get('id'), 'name': user.get('name'), 'email': user.get('email'), 'role': user.get('role')}
         return {'status': 'success', 'role': user.get('role')}, 200
     else:
+        print(f"[AuthController.py] Authentication failed for user: {name}", flush=True)
         return {'status': 'failure'}, 401
 
 
@@ -82,6 +85,7 @@ def google_login():
     """
 
     if not google.authorized:
+        print(f"[AuthController.py] User not authorized with Google, redirecting to login.", flush=True)
         return redirect(url_for('google.login'))
     
     resp = google.get('/oauth2/v2/userinfo')
@@ -93,6 +97,7 @@ def google_login():
 
     user = UserService.get_user_by_email(email)
     if not user:
+        print(f"[AuthController.py] No local user found for email {email}, redirecting to registration.", flush=True)
         return redirect(url_for('auth_bp.register_page', name=name, email=email))
     
     session['user'] = {'user_id': user.get('id'), 'name': user.get('name'), 'email': user.get('email'), 'role': user.get('role')}

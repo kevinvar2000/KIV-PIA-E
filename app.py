@@ -27,6 +27,8 @@ def create_app(config=None):
     
     register_routes(app)
 
+    print("[app.py] Flask application created and configured.", flush=True)
+
     return app
 
 if __name__ == '__main__':

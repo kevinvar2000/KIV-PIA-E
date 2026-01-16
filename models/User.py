@@ -33,12 +33,15 @@ class UserRole(Enum):
             >>> User.from_string(" user ")
             <User.USER: 'user'>
         """
+
         if not isinstance(value, str):
+            print(f"[User.py] Invalid type for role value: {type(value)}", flush=True)
             raise TypeError("Role value must be a string.")
         normalized = value.strip().lower()
         for role in cls:
             if role.value == normalized or role.name.lower() == normalized:
                 return role
+        print(f"[User.py] Unknown user role: {value}", flush=True)
         raise ValueError(f"Unknown user role: {value}")
 
 
@@ -91,10 +94,12 @@ class User:
 
         # check if name is valid
         if not name or not isinstance(name, str):
+            print(f"[User.py] Invalid name provided: {name}", flush=True)
             raise ValueError("Name must be a non-empty string.")
 
         # check if email is valid
         if not email or not isinstance(email, str) or "@" not in email:
+            print(f"[User.py] Invalid email provided: {email}", flush=True)
             raise ValueError("Email must be a valid non-empty string.")
 
         user = cls(name, email, UserRole.CUSTOMER)
@@ -125,12 +130,12 @@ class User:
             Exception: Propagates database or persistence-related errors when inserting the user or assigning languages.
         """
 
-        # check if name is valid
         if not name or not isinstance(name, str):
+            print(f"[User.py] Invalid name provided: {name}", flush=True)
             raise ValueError("Name must be a non-empty string.")
         
-        # check if email is valid
         if not email or not isinstance(email, str) or "@" not in email:
+            print(f"[User.py] Invalid email provided: {email}", flush=True)
             raise ValueError("Email must be a valid non-empty string.")
 
         user = User(name, email, UserRole.TRANSLATOR)
@@ -208,9 +213,11 @@ class User:
         Raises:
             ValueError: If `languages` is empty, not a list, or contains non-string items.
         """
-        # check if languages is valid
+
         if not languages or not isinstance(languages, list) or not all(isinstance(lang, str) for lang in languages):
+            print(f"[User.py] Invalid languages provided for TRANSLATOR: {languages}", flush=True)
             raise ValueError("Languages must be a non-empty list of strings.")
+
         self._languages = languages
 
         for lang in languages:
@@ -230,6 +237,7 @@ class User:
         Raises:
             Exception: Propagates any exceptions raised during database query execution.
         """
+
         result = db.execute_query(
             "SELECT language FROM Languages WHERE user_id = %s",
             (str(self.id),)
@@ -251,6 +259,7 @@ class User:
             DatabaseError: If the database query fails.
             ValueError: If a user's role string cannot be parsed into a UserRole.
         """
+
         result = db.execute_query(
             "SELECT id, name, email, role, created_at FROM Users"
         )
@@ -282,12 +291,14 @@ class User:
         Returns:
             Optional[User]: A User instance if found; otherwise, None.
         """
+
         result = db.execute_query(
             "SELECT id, name, email, password, role, created_at FROM Users WHERE id = %s",
             (user_id,)
         )
 
         if not result:
+            print(f"[User.py] No user found with ID: {user_id}", flush=True)
             return None
 
         row = result[0]
@@ -320,6 +331,7 @@ class User:
             DatabaseError: If the underlying database query fails.
             ValueError: If an invalid role value is encountered when converting to UserRole.
         """
+
         result = db.execute_query(
             "SELECT u.id, u.name, u.email, u.role, u.created_at FROM Users u "
             "JOIN Languages l ON u.id = l.user_id "

@@ -22,6 +22,7 @@ class AuthService:
         Returns:
             str: The SHA-256 hash of the password as a hexadecimal string.
         """
+
         return hashlib.sha256(password.encode()).hexdigest()
     
 
@@ -48,6 +49,7 @@ class AuthService:
         user_data = UserService.get_user_by_name(name)
 
         if user_data and user_data.get('password') == hashed_password:
+            print(f"[AuthService.py] User authenticated: {name}", flush=True)
             return user_data
 
         return None
@@ -70,6 +72,7 @@ def login_required_api(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
         if 'user' not in session:
+            print(f"[AuthService.py] No user in session for API request.", flush=True)
             return jsonify({'error': 'Unauthorized'}), 401
         return f(*args, **kwargs)
     return wrapper
@@ -94,14 +97,17 @@ def login_required_ui(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
         if 'user' not in session:
+            print(f"[AuthService.py] No user in session.", flush=True)
             return redirect(url_for('auth_bp.login_page'))
         
         user_session = session.get('user')
         if not user_session:
+            print(f"[AuthService.py] No user in session.", flush=True)
             return redirect(url_for('auth_bp.login_page'))
     
         user_data = UserService.get_user_by_name(user_session['name'])
         if not user_data:
+            print(f"[AuthService.py] User not found in session: {user_session['name']}", flush=True)
             return redirect(url_for('auth_bp.login_page'))
 
         return f(*args, **kwargs)
@@ -136,6 +142,7 @@ def require_role(*allowed_roles):
         def wrapper(*args, **kwargs):
             user = session.get('user')
             if not user or user['role'] not in allowed_roles:
+                print(f"[AuthService.py] Access denied for user: {user}", flush=True)
                 return jsonify({'error': 'Forbidden'}), 403
             return f(*args, **kwargs)
         return wrapper

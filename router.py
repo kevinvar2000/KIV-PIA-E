@@ -29,6 +29,8 @@ def register_routes(app):
     app.register_blueprint(proj_bp, url_prefix='/api')
     app.register_blueprint(email_bp, url_prefix='/api')
 
+    print("[router.py] Blueprints registered.", flush=True)
+
 
 app_bp = Blueprint('app_bp', __name__)
 
@@ -48,6 +50,9 @@ def home():
     - A redirect response to the appropriate route based on the user's role.
     - A 403 response for unknown roles.
     """
+
+    print("[router.py] Home route accessed.", flush=True)
+
     if 'user' not in session:
         return redirect(url_for('auth_bp.login_page'))
 
@@ -59,4 +64,5 @@ def home():
     elif user.get('role') == 'ADMINISTRATOR':
         return redirect(url_for('user_bp.administrator_page'))
     else:
+        print(f"[router.py] Unknown role encountered: {user.get('role')}", flush=True)
         return "Unknown role", 403

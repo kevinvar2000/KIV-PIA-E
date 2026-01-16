@@ -28,6 +28,7 @@ def create_user():
     Raises:
         None: Errors are handled and returned as HTTP responses.
     """
+
     data = request.get_json()
     name = data.get('name')
     email = data.get('email')
@@ -38,8 +39,10 @@ def create_user():
     try:
         hashed_password = AuthService.hash_password(password)
         UserService.create_user(name, email, hashed_password, role, languages)
+        print(f"[UserController.py] User created: {name} with role {role}", flush=True)
         return jsonify({'message': 'User created successfully.'}), 201
     except ValueError as e:
+        print(f"[UserController.py] User creation failed: {e}", flush=True)
         return jsonify({'error': str(e)}), 400
 
 
@@ -56,6 +59,7 @@ def get_all_users():
     Returns:
         Tuple[flask.Response, int]: A JSON response containing the list of users and the HTTP status code.
     """
+
     users = UserService.get_all_users()
     return jsonify({'users': users}), 200
 
@@ -78,9 +82,11 @@ def get_user(name):
                 - {"error": "User not found."} when the user is absent.
             - int: HTTP status code (200 on success, 404 if not found).
     """
+
     user_data = UserService.get_user_by_name(name)
 
     if not user_data:
+        print(f"[UserController.py] User not found: {name}", flush=True)
         return jsonify({'error': 'User not found.'}), 404
 
     return jsonify({'user': user_data}), 200
@@ -106,6 +112,7 @@ def customer_page():
 
     user_session = session.get('user')
     if not user_session:
+        print(f"[UserController.py] No user in session for customer page.", flush=True)
         return redirect(url_for('auth_bp.login_page'))
 
     user_data = UserService.get_user_by_name(user_session['name'])
@@ -134,6 +141,7 @@ def translator_page():
 
     user_session = session.get('user')
     if not user_session:
+        print(f"[UserController.py] No user in session for translator page.", flush=True)
         return redirect(url_for('auth_bp.login_page'))
     
     user_data = UserService.get_user_by_name(user_session['name'])
@@ -171,10 +179,12 @@ def administrator_page():
     Side Effects:
     - May trigger feedback checks/updates on the retrieved projects via ProjectService.check_feedbacks.
     """
+
     selected_state = request.args.get("state")
 
     user_session = session.get('user')
     if not user_session:
+        print(f"[UserController.py] No user in session for administrator page.", flush=True)
         return redirect(url_for('auth_bp.login_page'))
 
     states = ['all'] + [state.name for state in ProjectService.get_all_project_states()]

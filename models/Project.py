@@ -77,9 +77,8 @@ class Project:
             (str(project.id), project.name, project.description, str(customer_id), None, language, original_file, None, project.state.value, project.created_at)
         )
 
-        print("Result of project creation:", result, flush=True)
-
         if not result:
+            print(f"[Project.py] Failed to create project for customer_id: {customer_id}", flush=True)
             raise ValueError("Failed to create project in the database.")
 
         return project
@@ -135,9 +134,11 @@ class Project:
         """
 
         if not project_id or not isinstance(project_id, str):
+            print(f"[Project.py] Invalid project_id provided: {project_id}", flush=True)
             raise ValueError("Project ID must be a valid non-empty string.")
 
         if not translator_id or not isinstance(translator_id, str):
+            print(f"[Project.py] Invalid translator_id provided: {translator_id}", flush=True)
             raise ValueError("Translator ID must be a valid non-empty string.")
 
         db.execute_query(
@@ -156,6 +157,7 @@ class Project:
         Raises:
             DatabaseError: If the database query fails.
         """
+
         result = db.execute_query(
             "SELECT * FROM Projects"
         )
@@ -179,12 +181,14 @@ class Project:
         Raises:
             DatabaseError: If the underlying database query fails (depending on db.execute_query implementation).
         """
+
         result = db.execute_query(
             "SELECT * FROM Projects WHERE id = %s",
             (project_id,)
         )
 
         if not result:
+            print(f"[Project.py] No project found with ID: {project_id}", flush=True)
             return None
 
         projects = Project.from_result(result)
@@ -207,11 +211,13 @@ class Project:
         Returns:
             None
         """
+
         result = db.execute_query(
             "UPDATE Projects SET state = %s WHERE id = %s",
             (state, project_id)
         )
         if not result:
+            print(f"[Project.py] Failed to update state for project ID: {project_id}", flush=True)
             raise ValueError("Failed to update project status.")
 
 
@@ -233,12 +239,16 @@ class Project:
             - Expects a database row with a 'state' column containing a valid ProjectState value.
             - The returned value is converted into a ProjectState enum instance.
         """
+
         result = db.execute_query(
             "SELECT state FROM Projects WHERE id = %s",
             (project_id,)
         )
+
         if not result:
+            print(f"[Project.py] No project found with ID: {project_id}", flush=True)
             raise ValueError("Project not found.")
+
         return ProjectState(result[0]['state'])
 
     @staticmethod
@@ -255,19 +265,13 @@ class Project:
             ValueError: If the feedback could not be saved (e.g., the database operation failed).
         """
 
-        print( "Saving feedback:", project_id, feedback, flush=True)
-        print(f"Query:",
-               "INSERT INTO Feedbacks (projectId, text, createdAt) VALUES (%s, %s, %s)",
-               (project_id, feedback, datetime.utcnow()), flush=True)
-
         result = db.execute_query(
             "INSERT INTO Feedbacks (projectId, text, createdAt) VALUES (%s, %s, %s)",
             (project_id, feedback, datetime.utcnow())
         )
-
-        print("Result of saving feedback:", result, flush=True)
         
         if not result:
+            print(f"[Project.py] Failed to save feedback for project ID: {project_id}", flush=True)
             raise ValueError("Failed to save feedback for the project.")
 
 
@@ -290,7 +294,9 @@ class Project:
             (project_id,)
         )
         if not result:
+            print(f"[Project.py] No feedback found for project ID: {project_id}", flush=True)
             raise ValueError("Feedback not found.")
+
         return result[0]['text']
 
 
@@ -311,11 +317,14 @@ class Project:
         Raises:
             ValueError: If the update operation fails (e.g., no rows affected).
         """
+
         result = db.execute_query(
             "UPDATE Feedbacks SET text = %s, createdAt = %s WHERE projectId = %s",
             (feedback, datetime.utcnow(), project_id)
         )
+
         if not result:
+            print(f"[Project.py] Failed to update feedback for project ID: {project_id}", flush=True)
             raise ValueError("Failed to update feedback for the project.")
 
     
@@ -344,10 +353,11 @@ class Project:
         )
 
         if result is None:
+            print(f"[Project.py] Failed to save translated file for project ID: {project_id}", flush=True)
             raise ValueError("Failed to save translated file for the project.")
 
         if result == 0:
-            print("No changes were made (file identical), but upload is accepted.")
+            print("[Project.py] No changes were made (file identical), but upload is accepted.", flush=True)
     
 
     @staticmethod
@@ -364,12 +374,14 @@ class Project:
         Raises:
             ValueError: If no project with the given ID exists.
         """
+
         result = db.execute_query(
             "SELECT originalFile FROM Projects WHERE id = %s",
             (project_id,)
         )
 
         if not result:
+            print(f"[Project.py] No project found with ID: {project_id}", flush=True)
             raise ValueError("Project not found.")
 
         return result[0]['originalFile']
@@ -388,12 +400,14 @@ class Project:
         Raises:
             ValueError: If the project with the given ID does not exist.
         """
+
         result = db.execute_query(
             "SELECT translatedFile FROM Projects WHERE id = %s",
             (project_id,)
         )
 
         if not result:
+            print(f"[Project.py] No project found with ID: {project_id}", flush=True)
             raise ValueError("Project not found.")
 
         return result[0]['translatedFile']
@@ -414,6 +428,7 @@ class Project:
             This function queries the `Projects` table by `customerId` and converts
             the result rows into `Project` objects using `Project.from_result`.
         """
+
         result = db.execute_query(
             "SELECT * FROM Projects WHERE customerId = %s",
             (customer_id,)
@@ -449,6 +464,7 @@ class Project:
             - If 'state' is present but invalid, it falls back to ProjectState.CREATED.
             - Fields not present or explicitly None remain unset or defaulted on the Project instance.
         """
+
         projects = []
         for row in result:
             project = Project(
@@ -475,6 +491,7 @@ class Project:
                 try:
                     project.state = ProjectState(state_val)
                 except ValueError:
+                    print(f"[Project.py] Invalid state value '{state_val}' for project ID: {project.id}. Defaulting to CREATED.", flush=True)
                     project.state = ProjectState.CREATED
 
             created_at = row.get('createdAt')

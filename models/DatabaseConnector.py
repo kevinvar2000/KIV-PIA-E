@@ -36,6 +36,7 @@ class DatabaseConnector:
         Returns:
             None
         """
+
         try:
             self.connection = mysql.connector.connect(
                 host=self.host,
@@ -43,9 +44,9 @@ class DatabaseConnector:
                 password=self.password,
                 database=self.database
             )
-            print("Connection successful.", flush=True)
+            print("[DatabaseConnector.py] Connection successful.", flush=True)
         except mysql.connector.Error as err:
-            print(f"Error: {err}", flush=True)
+            print(f"[DatabaseConnector.py] Connection error: {err}", flush=True)
             self.connection = None
 
     def close(self):
@@ -67,7 +68,7 @@ class DatabaseConnector:
         """
         if self.connection:
             self.connection.close()
-            print("Connection closed.", flush=True)
+            print("[DatabaseConnector.py] Connection closed.", flush=True)
 
     def execute_query(self, query, params=None):
         """
@@ -104,7 +105,7 @@ class DatabaseConnector:
                 self.connection.commit()
                 return cursor.rowcount
         except mysql.connector.Error as err:
-            print(f"Query error: {err}", flush=True)
+            print(f"[DatabaseConnector.py] Query execution error: {err}", flush=True)
             return None
         finally:
             cursor.close()

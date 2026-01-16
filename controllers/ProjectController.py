@@ -27,13 +27,16 @@ def create_project():
         project = ProjectService.create_project(customer_id, project_name, description, target_language, source_file)
 
         if not project:
+            print(f"[ProjectController.py] Project creation failed.", flush=True)
             return jsonify({'error': 'Project creation failed.'}), 500
         
         if project.state == ProjectState.CLOSED:
+            print(f"[ProjectController.py] No translators available. Project closed.", flush=True)
             return jsonify({'error': 'No translators available. Project closed.'}), 400
 
         return jsonify({'message': 'Project created successfully.'}), 201
     except ValueError as e:
+        print(f"[ProjectController.py] Project creation failed: {e}", flush=True)
         return jsonify({'error': str(e)}), 400
 
 
@@ -49,10 +52,12 @@ def get_all_projects():
     the key 'error' with a status code of 400 if an exception of type `ValueError` is caught during the
     process.
     """
+
     try:
         projects = ProjectService.get_all_projects()
         return jsonify({'projects': projects}), 200
     except ValueError as e:
+        print(f"[ProjectController.py] Error retrieving all projects: {e}", flush=True)
         return jsonify({'error': str(e)}), 400
 
 
@@ -80,11 +85,13 @@ def get_projects(customer_id):
     Error Handling:
         Returns a 400 response with an error message if ProjectService raises a ValueError.
     """
+
     try:
         projects = ProjectService.get_projects_by_customer_id(customer_id)
         projects_data = [{'id': p.id, 'name': p.name, 'description': p.description, 'status': p.status} for p in projects]
         return jsonify({'projects': projects_data}), 200
     except ValueError as e:
+        print(f"[ProjectController.py] Error retrieving projects for customer {customer_id}: {e}", flush=True)
         return jsonify({'error': str(e)}), 400
 
 
@@ -107,13 +114,16 @@ def get_project(project_id):
     Raises:
         ValueError: If the provided project_id is invalid or cannot be processed.
     """
+
     try:
         project = ProjectService.get_project_by_id(project_id)
         if not project:
+            print(f"[ProjectController.py] Project not found: {project_id}", flush=True)
             return jsonify({'error': 'Project not found.'}), 404
         project_data = {'id': project.id, 'name': project.name, 'description': project.description, 'status': project.status}
         return jsonify({'project': project_data}), 200
     except ValueError as e:
+        print(f"[ProjectController.py] Error retrieving project {project_id}: {e}", flush=True)
         return jsonify({'error': str(e)}), 400
 
 
@@ -138,6 +148,7 @@ def update_project_status(project_id):
     Raises:
         None: Errors are caught and returned as JSON with HTTP 400.
     """
+
     data = request.json
     status = data.get('status')
 
@@ -145,6 +156,7 @@ def update_project_status(project_id):
         ProjectService.update_project_status(project_id, status)
         return jsonify({'message': 'Project status updated successfully.'}), 200
     except ValueError as e:
+        print(f"[ProjectController.py] Error updating project {project_id} status: {e}", flush=True)
         return jsonify({'error': str(e)}), 400
 
     
@@ -178,6 +190,7 @@ def assign_translator(project_id):
         ProjectService.assign_translator_to_project(project_id, translator_id)
         return jsonify({'message': 'Translator assigned successfully.'}), 200
     except ValueError as e:
+        print(f"[ProjectController.py] Error assigning translator to project {project_id}: {e}", flush=True)
         return jsonify({'error': str(e)}), 400
     
 
@@ -203,10 +216,12 @@ def accept_translation(project_id):
                     (e.g., project not found, translation not ready for acceptance).
     """
     """API endpoint for customer to accept a translation."""
+
     try:
         ProjectService.accept_translation(project_id)
         return jsonify({'message': 'Translation accepted successfully.'}), 200
     except ValueError as e:
+        print(f"[ProjectController.py] Error accepting translation for project {project_id}: {e}", flush=True)
         return jsonify({'error': str(e)}), 400
 
 
@@ -237,6 +252,7 @@ def reject_translation(project_id):
         ProjectService.reject_translation(project_id, feedback)
         return jsonify({'message': 'Translation rejected successfully.'}), 200
     except ValueError as e:
+        print(f"[ProjectController.py] Error rejecting translation for project {project_id}: {e}", flush=True)
         return jsonify({'error': str(e)}), 400
 
 
@@ -265,6 +281,7 @@ def close_project(project_id):
         ProjectService.close_project(project_id)
         return jsonify({'message': 'Project closed successfully.'}), 200
     except ValueError as e:
+        print(f"[ProjectController.py] Error closing project {project_id}: {e}", flush=True)
         return jsonify({'error': str(e)}), 400
 
 
@@ -295,6 +312,7 @@ def download_original_file(project_id):
                         as_attachment=True,
                         download_name=filename)
     except ValueError as e:
+        print(f"[ProjectController.py] Error downloading original file for project {project_id}: {e}", flush=True)
         return jsonify({'error': str(e)}), 400
 
 
@@ -324,6 +342,7 @@ def download_translated_file(project_id):
                          as_attachment=True,
                          download_name=filename)
     except ValueError as e:
+        print(f"[ProjectController.py] Error downloading translated file for project {project_id}: {e}", flush=True)
         return jsonify({'error': str(e)}), 400
 
 
@@ -363,4 +382,5 @@ def upload_translated_file(project_id):
         ProjectService.save_translated_file(project_id, translated_file)
         return jsonify({'message': 'Translated file uploaded successfully.'}), 200
     except ValueError as e:
+        print(f"[ProjectController.py] Error uploading translated file for project {project_id}: {e}", flush=True)
         return jsonify({'error': str(e)}), 400
