@@ -1,5 +1,5 @@
 __pycache__/
 *.pyc
 .env
-client_secret_*.json
+client_secret_*.com.json
 *.txt
