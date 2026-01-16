@@ -167,6 +167,31 @@ class User:
         
         return result[0] if result else None
 
+
+    @classmethod
+    def get_user_by_email(cls, email: str):
+        """
+        Retrieve a single user record by their exact email address.
+        This class method queries the Users table for a row with a matching `email`
+        and returns the first result if found.
+        Parameters:
+            email (str): The exact email address to look up.
+        Returns:
+            Optional[tuple]: A tuple containing (id, name, email, password, role, created_at)
+            for the matched user, or None if no user with the given email exists.
+        Notes:
+            - If multiple rows match the same email, only the first result is returned.
+            - The query uses a parameterized statement to prevent SQL injection.
+        """
+        
+        result = db.execute_query(
+            "SELECT id, name, email, password, role, created_at FROM Users WHERE email = %s",
+            (email,)
+        )
+        
+        return result[0] if result else None
+
+
     @property
     def languages(self):
         return self._languages

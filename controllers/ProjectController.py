@@ -39,7 +39,7 @@ def create_project():
 
 @proj_bp.route('/projects', methods=['GET'])
 @login_required_api
-@require_role('ADMIN', 'TRANSLATOR')
+@require_role('ADMINISTRATOR', 'TRANSLATOR')
 def get_all_projects():
     """
     This Python function retrieves all projects using an API endpoint and returns them as JSON, handling
@@ -59,7 +59,7 @@ def get_all_projects():
 
 @proj_bp.route('/projects/<customer_id>', methods=['GET'])
 @login_required_api
-@require_role('CUSTOMER', 'ADMIN')
+@require_role('CUSTOMER', 'ADMINISTRATOR')
 def get_projects(customer_id):
     """
     Fetch all projects for a given customer.
@@ -90,7 +90,7 @@ def get_projects(customer_id):
 
 @proj_bp.route('/project/<project_id>', methods=['GET'])
 @login_required_api
-@require_role('CUSTOMER', 'TRANSLATOR', 'ADMIN')
+@require_role('CUSTOMER', 'TRANSLATOR', 'ADMINISTRATOR')
 def get_project(project_id):
     """
     API endpoint to retrieve a project by its unique ID.
@@ -119,7 +119,7 @@ def get_project(project_id):
 
 @proj_bp.route('/project/<project_id>/status', methods=['PUT'])
 @login_required_api
-@require_role('CUSTOMER', 'TRANSLATOR', 'ADMIN')
+@require_role('CUSTOMER', 'TRANSLATOR', 'ADMINISTRATOR')
 def update_project_status(project_id):
     """
     API endpoint to update the status of a project.
@@ -150,7 +150,7 @@ def update_project_status(project_id):
     
 @proj_bp.route('/project/<project_id>/assign', methods=['PUT'])
 @login_required_api
-@require_role('ADMIN')
+@require_role('ADMINISTRATOR')
 def assign_translator(project_id):
     """API endpoint to assign a translator to a project.
     Consumes a JSON payload containing a 'translator_id' and delegates the assignment
@@ -242,7 +242,7 @@ def reject_translation(project_id):
 
 @proj_bp.route('/project/<project_id>/close', methods=['POST'])
 @login_required_api
-@require_role('ADMIN')
+@require_role('ADMINISTRATOR')
 def close_project(project_id):
     """Close a project by its unique identifier.
 
@@ -270,7 +270,7 @@ def close_project(project_id):
 
 @proj_bp.route('/project/<project_id>/download/original', methods=['GET'])
 @login_required_api
-@require_role('CUSTOMER', 'TRANSLATOR', 'ADMIN')
+@require_role('CUSTOMER', 'TRANSLATOR', 'ADMINISTRATOR')
 def download_original_file(project_id):
     """
     API endpoint to download the original file associated with a given project.
@@ -300,7 +300,7 @@ def download_original_file(project_id):
 
 @proj_bp.route('/project/<project_id>/download/translation', methods=['GET'])
 @login_required_api
-@require_role('CUSTOMER', 'TRANSLATOR', 'ADMIN')
+@require_role('CUSTOMER', 'TRANSLATOR', 'ADMINISTRATOR')
 def download_translated_file(project_id):
     """
     Handle download of a translated file for a given project.

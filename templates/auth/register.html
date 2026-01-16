@@ -8,11 +8,11 @@
             <form id="registerForm" method="post">
                 <div class="mb-3">
                     <label for="id_name" class="form-label" data-i18n="register_name"></label>
-                    <input type="text" class="form-control" name="name" id="id_name" required>
+                    <input type="text" class="form-control" name="name" id="id_name" required {% if name %}value="{{ name }}"{% endif %}>
                 </div>
                 <div class="mb-3">
                     <label for="id_email" class="form-label" data-i18n="register_email"></label>
-                    <input type="email" class="form-control" name="email" id="id_email" required>
+                    <input type="email" class="form-control" name="email" id="id_email" required {% if email %}value="{{ email }}"{% endif %}>
                 </div>
                 <div class="mb-3">
                     <label for="id_password" class="form-label" data-i18n="register_password"></label>
@@ -28,10 +28,10 @@
                 </div>
 
                 <div class="mb-3" id="languages-container" style="display:none;">
-                <label for="id_languages" class="form-label" data-i18n="register_languages"></label>
+                <label for="languages" class="form-label" data-i18n="register_languages"></label>
                 <select class="selectpicker form-control" 
                         name="languages" 
-                        id="id_languages" 
+                        id="languages" 
                         multiple 
                         data-live-search="true" 
                         data-actions-box="true"
@@ -40,7 +40,7 @@
                     <option value="{{ lang_code }}">{{ lang_name }}</option>
                     {% endfor %}
                 </select>
-                <div class="form-text" id="selected-languages-text"></div>
+                <div class="form-text text-white" id="selected-languages-text"></div>
                 </div>
                 <button type="submit" class="btn btn-primary w-100" data-i18n="register_button"></button>
             </form>

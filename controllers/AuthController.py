@@ -83,8 +83,9 @@ def google_login():
 
     user = UserService.get_user_by_email(email)
     if not user:
-        UserService.create_user(name=name, email=email, role='user')
-    session['user'] = {'name': name, 'email': email}
+        return redirect(url_for('auth_bp.register_page', name=name, email=email))
+    
+    session['user'] = {'user_id': user.get('id'), 'name': user.get('name'), 'email': user.get('email'), 'role': user.get('role')}
     
     return redirect(url_for('app_bp.home'))
 
@@ -95,7 +96,9 @@ def register_page():
     Render the registration page with supported languages.
     :return: Rendered registration template with a list of supported languages.
     """
-    return render_template('auth/register.html', languages=get_supported_languages())
+    name = request.args.get('name', '')
+    email = request.args.get('email', '')
+    return render_template('auth/register.html', languages=get_supported_languages(), name=name, email=email)
 
 
 @auth_bp.route('/api/register', methods=['POST'])
@@ -131,7 +134,7 @@ def api_register():
 
     hashed_password = AuthService.hash_password(password)
 
-    AuthService.register_user(name, email, hashed_password, role, languages)
+    UserService.create_user(name, email, hashed_password, role, languages)
 
     return {'status': 'success'}, 201
 

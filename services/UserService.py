@@ -35,6 +35,9 @@ class UserService:
 
         if not email or not isinstance(email, str) or "@" not in email:
             raise ValueError("Email must be a valid non-empty string.")
+        
+        if role == 'TRANSLATOR' and (not languages or not isinstance(languages, list)) and len(languages) > 0:
+            raise ValueError("Languages must be a valid list of language codes for TRANSLATOR role.")
 
         user = User.create_customer(name, email, hashed_password) if role == 'CUSTOMER' else User.create_translator(name, email, hashed_password, languages)
 
@@ -58,6 +61,26 @@ class UserService:
             return None
 
         return user_data
+
+    
+    @staticmethod
+    def get_user_by_email(email):
+        """
+        Retrieve a user's data by their email address.
+        Args:
+            email (str): The email address to look up.
+        Returns:
+            dict | object | None: The user data returned by `User.get_user_by_email(email)`,
+            or None if no matching user is found.
+        """
+
+        user_data = User.get_user_by_email(email)
+
+        if not user_data:
+            return None
+
+        return user_data
+
 
     
     @staticmethod

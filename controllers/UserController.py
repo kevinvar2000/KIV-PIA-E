@@ -45,7 +45,7 @@ def create_user():
 
 @user_bp.route('/users', methods=['GET'])
 @login_required_api
-@require_role('ADMIN')
+@require_role('ADMINISTRATOR')
 def get_all_users():
     """
     Retrieve all users.
@@ -62,7 +62,7 @@ def get_all_users():
 
 @user_bp.route('/users/<name>', methods=['GET'])
 @login_required_api
-@require_role('ADMIN')
+@require_role('ADMINISTRATOR')
 def get_user(name):
     """
     Retrieve a user by name via the API.
@@ -147,7 +147,7 @@ def translator_page():
 
 @user_bp.route('/administrator', methods=['GET'])
 @login_required_ui
-@require_role('ADMIN')
+@require_role('ADMINISTRATOR')
 def administrator_page():
     """
     Render the administrator dashboard page.

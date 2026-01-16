@@ -51,10 +51,10 @@ def home():
 
     user = session['user']
     if user.get('role') == 'CUSTOMER':
-        return redirect(url_for('user_bp.customer'))
+        return redirect(url_for('user_bp.customer_page'))
     elif user.get('role') == 'TRANSLATOR':
-        return redirect(url_for('user_bp.translator'))
+        return redirect(url_for('user_bp.translator_page'))
     elif user.get('role') == 'ADMINISTRATOR':
-        return redirect(url_for('user_bp.administrator'))
+        return redirect(url_for('user_bp.administrator_page'))
     else:
         return "Unknown role", 403
