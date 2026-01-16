@@ -3,6 +3,7 @@ from models.Project import Project, ProjectState
 from werkzeug.datastructures import FileStorage as _WSFileStorage
 from bin.helper import MAX_FILE_SIZE_MB
 from services.UserService import UserService
+from services.EmailService import EmailService
 
 class ProjectService:
 
@@ -65,12 +66,20 @@ class ProjectService:
             print(f"Assigning translator {translator.id} to project {project.id}", flush=True)
             Project.assign_translator(project.id, translator.id)
 
-            # UserService.notify_translator(translator.id, project.id)
+            EmailService.send_email(
+                email=translator.email,
+                subject=f"New translation project assigned: {project_name}",
+                body=f"You have been assigned to translate the project '{project_name}' into {target_language}."
+            )
         else:
             print(f"No translators available for language: {target_language}", flush=True)
             project.update_state(project.id, ProjectState.CLOSED.value)
 
-            # UserService.notify_customer(customer_id, project.id)
+            EmailService.send_email(
+                email=UserService.get_user_by_id(customer_id).email,
+                subject=f"Project closed: {project_name}",
+                body=f"Your project '{project_name}' has been closed due to no available translators for the target language '{target_language}'."
+            )
 
         return project
 
@@ -217,7 +226,13 @@ class ProjectService:
 
         Project.update_state(project_id, ProjectState.APPROVED.value)
 
-        # UserService.notify_translator_of_acceptance(project_id)
+        project = Project.get_by_id(project_id)
+
+        EmailService.send_email(
+            email=UserService.get_user_by_id(project.translator_id).email,
+            subject="Translation Accepted",
+            body=f"Your translation for project '{project.name}' has been accepted."
+        )
 
 
     @staticmethod
@@ -258,7 +273,13 @@ class ProjectService:
         else:
             Project.save_feedback(project_id, feedback)
         
-        # UserService.notify_translator_of_rejection(project_id, feedback)
+        project = Project.get_by_id(project_id)
+
+        EmailService.send_email(
+            email=UserService.get_user_by_id(project.translator_id).email,
+            subject="Translation Rejected",
+            body=f"Your translation for project '{project.name}' has been rejected. Feedback: {feedback}"
+        )
 
 
     @staticmethod
@@ -283,7 +304,13 @@ class ProjectService:
 
         Project.update_state(project_id, ProjectState.CLOSED.value)
 
-        # UserService.notify_users_of_closure(project_id)
+        project = Project.get_by_id(project_id)
+
+        EmailService.send_email(
+            email=UserService.get_user_by_id(project.translator_id).email,
+            subject="Project Closed",
+            body=f"Your project '{project.name}' has been closed."
+        )
 
 
     @staticmethod
@@ -390,7 +417,11 @@ class ProjectService:
         Project.save_translated_file(project_id, filename)
         Project.update_state(project_id, ProjectState.COMPLETED.value)
 
-        # UserService.notify_customer(project.customer_id, project.id)
+        EmailService.send_email(
+            email=UserService.get_user_by_id(project.customer_id).email,
+            subject=f"Translated file uploaded for project {project.name}",
+            body=f"The translated file for your project '{project.name}' has been uploaded and is now available."
+        )
 
 
     @staticmethod

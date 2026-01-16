@@ -11,12 +11,15 @@ services:
       DATABASE_USER: pia_user
       DATABASE_PASSWORD: pia_password
       DATABASE_NAME: pia_db
-      MAIL_SERVER: mail
-      MAIL_PORT: 1025
+      SMTP_HOST: mail
+      SMTP_PORT: "1025"
+      SMTP_FROM: "noreply@pia.local"
+      MAILHOG_HTTP: "http://mail:8025"
     ports:
       - "5000:5000"
     depends_on:
       - mysql
+      - mail
 
   mysql:
     image: mysql:8.0

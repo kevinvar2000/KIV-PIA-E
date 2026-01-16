@@ -45,6 +45,8 @@ class Project:
         self.state = ProjectState.CREATED
         self.created_at = datetime.now()
         self.feedback = None
+        self.name = None
+        self.description = None
 
 
     @staticmethod
@@ -67,10 +69,12 @@ class Project:
         """
 
         project = Project(customer_id, None, language, original_file)
+        project.name = project_name
+        project.description = description
 
         result = db.execute_query(
             "INSERT INTO Projects (id, name, description, customerId, translatorId, languageCode, originalFile, translatedFile, state, createdAt) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
-            (str(project.id), project_name, description, str(customer_id), None, language, original_file, None, project.state.value, project.created_at)
+            (str(project.id), project.name, project.description, str(customer_id), None, language, original_file, None, project.state.value, project.created_at)
         )
 
         print("Result of project creation:", result, flush=True)

@@ -41,7 +41,7 @@
                             
                             <button class="btn btn-outline-primary btn-sm" onclick="downloadOriginal('{{ project.id }}')" data-i18n="original"></button>
                             
-                            {% if state != 'completed' and state != 'closed' %}
+                            {% if state == 'assigned' %}
                             <input type="file" class="d-none" id="upload-input-{{ project.id }}" accept=".txt,.doc,.docx,.pdf,.rtf,.odt,.html,.md" onchange="uploadTranslatedFile('{{ project.id }}')">
                             <button type="button" class="btn btn-success btn-sm" onclick="document.getElementById('upload-input-{{ project.id }}').click();" data-i18n="upload"></button>
                             {% endif %}
