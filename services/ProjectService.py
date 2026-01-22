@@ -117,19 +117,9 @@ class ProjectService:
 
         projects = Project.get_all()
 
-        serialized = []
-        for p in projects:
-            if isinstance(p, dict):
-                data = p
-            elif hasattr(p, "to_dict") and callable(getattr(p, "to_dict")):
-                data = p.to_dict()
-            else:
-                data = {k: (v.value if isinstance(v, ProjectState) else v) for k, v in vars(p).items()}
-            if "state" in data and isinstance(data["state"], ProjectState):
-                data["state"] = data["state"].value
-            serialized.append(data)
+        projects = [Project.to_dict(p) for p in projects]
 
-        return serialized
+        return projects
 
     @staticmethod
     def get_projects_by_user_id(user_id: str, role: str) -> list:

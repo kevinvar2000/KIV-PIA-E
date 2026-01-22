@@ -126,7 +126,7 @@ def test_admin_sees_all_projects():
     a_name, a_email = _make_unique_identity("admin")
     _insert_user(aid, a_name, a_email, password_hash="x", role_db="ADMINISTRATOR")
 
-    _set_session(client, aid, a_name, a_email, role_session="ADMIN")
+    _set_session(client, aid, a_name, a_email, role_session="ADMINISTRATOR")
 
     resp = client.get("/api/projects")
     assert resp.status_code == 200, resp.get_data(as_text=True)

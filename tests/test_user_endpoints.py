@@ -134,7 +134,7 @@ def test_get_users_forbidden_for_non_admin(client):
 def test_get_users_success_for_admin(client, monkeypatch):
     from services.UserService import UserService
 
-    _set_session_user(client, role="ADMIN")
+    _set_session_user(client, role="ADMINISTRATOR")
 
     monkeypatch.setattr(
         UserService,
@@ -166,7 +166,7 @@ def test_get_user_by_name_forbidden_for_non_admin(client):
 def test_get_user_by_name_not_found_returns_404(client, monkeypatch):
     from services.UserService import UserService
 
-    _set_session_user(client, role="ADMIN")
+    _set_session_user(client, role="ADMINISTRATOR")
     monkeypatch.setattr(UserService, "get_user_by_name", staticmethod(lambda name: None))
 
     resp = client.get(f"{API_PREFIX}/users/ghost")
@@ -178,7 +178,7 @@ def test_get_user_by_name_not_found_returns_404(client, monkeypatch):
 def test_get_user_by_name_success_returns_200(client, monkeypatch):
     from services.UserService import UserService
 
-    _set_session_user(client, role="ADMIN")
+    _set_session_user(client, role="ADMINISTRATOR")
     monkeypatch.setattr(
         UserService,
         "get_user_by_name",
