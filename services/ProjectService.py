@@ -5,6 +5,13 @@ from bin.helper import MAX_FILE_SIZE_MB
 from services.UserService import UserService
 from services.EmailService import EmailService
 
+ALLOWED_TRANSITIONS = {
+    ProjectState.ASSIGNED: [ProjectState.COMPLETED],
+    ProjectState.COMPLETED: [ProjectState.APPROVED, ProjectState.REJECTED],
+    ProjectState.REJECTED: [ProjectState.ASSIGNED, ProjectState.CLOSED],
+    ProjectState.APPROVED: [ProjectState.CLOSED],
+}
+
 class ProjectService:
 
     PROJECTS_FOLDER = 'projects/'
@@ -158,6 +165,26 @@ class ProjectService:
             raise ValueError("Invalid role specified.")
 
         return projects
+    
+    @staticmethod
+    def get_projects_by_customer_id(customer_id: str) -> list:
+        """
+        Retrieve all projects associated with a specific customer.
+        Parameters:
+            customer_id (str): The unique identifier of the customer. Must be a non-empty string.
+        Returns:
+            list: A list of Project instances associated with the given customer ID.
+        Raises:
+            ValueError: If `customer_id` is not a valid non-empty string.
+        """
+
+        if not customer_id or not isinstance(customer_id, str):
+            print(f"[ProjectService.py] Invalid customer_id provided: {customer_id}", flush=True)
+            raise ValueError("Customer ID must be a valid non-empty string.")
+
+        projects = Project.get_by_user_id(customer_id, "customerId")
+        projects = [Project.to_dict(p) for p in projects]
+        return projects
 
     @staticmethod
     def get_project_by_id(project_id: str) -> Project:
@@ -176,10 +203,11 @@ class ProjectService:
             raise ValueError("Project ID must be a valid non-empty string.")
 
         project = Project.get_by_id(project_id)
+        project = Project.to_dict(project) if project else None
         return project
     
     @staticmethod
-    def update_project_status(project_id: str, status: str) -> None:
+    def update_project_status(project_id: str, status: str, actor: dict) -> None:
         """Update the status of a project."""
 
         if not project_id or not isinstance(project_id, str):
@@ -190,7 +218,45 @@ class ProjectService:
             print(f"[ProjectService.py] Invalid status provided: {status}", flush=True)
             raise ValueError("Status must be a valid non-empty string.")
 
-        Project.update_state(project_id, status)
+        if not actor:
+            print(f"[ProjectService.py] Actor information is required.", flush=True)
+            raise PermissionError("Actor information is required.")
+
+        state = status.upper()
+
+        try:
+            new_state = ProjectState[state]
+        except KeyError:
+            print(f"[ProjectService.py] Unknown status provided: {status}", flush=True)
+            raise ValueError("Invalid status value.")
+
+        current_state = Project.get_state(project_id)
+
+        allowed = ALLOWED_TRANSITIONS.get(current_state, [])
+        if new_state not in allowed:
+            print(f"[ProjectService.py] Invalid state transition from {current_state.value} to {new_state.value}", flush=True)
+            raise ValueError("Invalid state transition.")
+
+        role = actor.get('role')
+        user_id = actor.get('id')
+
+        project = Project.get_by_id(project_id)
+        translator_id = project.translator_id
+        customer_id = project.customer_id
+
+        if new_state == ProjectState.COMPLETED:
+            if role != "TRANSLATOR" or user_id != translator_id:
+                raise PermissionError("Only assigned TRANSLATOR can complete the project.")
+
+        elif new_state in (ProjectState.APPROVED, ProjectState.REJECTED):
+            if role != "CUSTOMER" or user_id != customer_id:
+                raise PermissionError("Only owning CUSTOMER can approve/reject the project.")
+
+        elif new_state == ProjectState.CLOSED:
+            if role != "ADMINISTRATOR":
+                raise PermissionError("Only ADMINISTRATOR can close the project.")
+
+        Project.update_state(project_id, new_state.value)
 
     @staticmethod
     def assign_translator_to_project(project_id: str, translator_id: str) -> None:

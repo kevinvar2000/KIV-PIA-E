@@ -502,3 +502,33 @@ class Project:
 
         return projects
 
+    @staticmethod
+    def to_dict(project: 'Project') -> dict:
+        """
+        Convert a Project instance into a dictionary representation.
+        This method extracts key attributes from the Project instance and
+        constructs a dictionary with those values for easy serialization
+        or data transfer.
+        Parameters:
+            project (Project): The Project instance to convert.
+        Returns:
+            dict: A dictionary containing the project's attributes:
+                - 'id': Unique identifier of the project.
+                - 'name': Name of the project.
+                - 'description': Description of the project.
+                - 'customer_id': Identifier of the customer who owns the project.
+                - 'translator_id': Identifier of the assigned translator (if any).
+                - 'language': Language code for the project.
+                - 'state': Current state of the project as a string.
+                - 'created_at': Timestamp when the project was created.
+        """
+        return {
+            'id': project.id,
+            'name': project.name,
+            'description': project.description,
+            'customer_id': project.customer_id,
+            'translator_id': project.translator_id,
+            'language': project.language,
+            'state': project.state.value,
+            'created_at': project.created_at
+        }

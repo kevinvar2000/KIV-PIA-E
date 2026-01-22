@@ -78,7 +78,7 @@ def get_projects(customer_id):
     Returns:
         tuple:
             - flask.Response: JSON response containing either:
-                - {"projects": [{"id": int, "name": str, "description": str, "status": str}, ...]}
+                - {"projects": [{"id": int, "name": str, "description": str, "state": str}, ...]}
                 - or {"error": str} if the request is invalid.
             - int: HTTP status code (200 on success, 400 on invalid input).
 
@@ -88,8 +88,7 @@ def get_projects(customer_id):
 
     try:
         projects = ProjectService.get_projects_by_customer_id(customer_id)
-        projects_data = [{'id': p.id, 'name': p.name, 'description': p.description, 'status': p.status} for p in projects]
-        return jsonify({'projects': projects_data}), 200
+        return jsonify({'projects': projects}), 200
     except ValueError as e:
         print(f"[ProjectController.py] Error retrieving projects for customer {customer_id}: {e}", flush=True)
         return jsonify({'error': str(e)}), 400
@@ -120,8 +119,7 @@ def get_project(project_id):
         if not project:
             print(f"[ProjectController.py] Project not found: {project_id}", flush=True)
             return jsonify({'error': 'Project not found.'}), 404
-        project_data = {'id': project.id, 'name': project.name, 'description': project.description, 'status': project.status}
-        return jsonify({'project': project_data}), 200
+        return jsonify({'project': project}), 200
     except ValueError as e:
         print(f"[ProjectController.py] Error retrieving project {project_id}: {e}", flush=True)
         return jsonify({'error': str(e)}), 400
@@ -152,9 +150,14 @@ def update_project_status(project_id):
     data = request.json
     status = data.get('status')
 
+    actor = session.get('user', {})
+
     try:
-        ProjectService.update_project_status(project_id, status)
+        ProjectService.update_project_status(project_id, status, actor)
         return jsonify({'message': 'Project status updated successfully.'}), 200
+    except PermissionError as e:
+        print(f"[ProjectController.py] Permission error updating project {project_id} status: {e}", flush=True)
+        return jsonify({'error': str(e)}), 403
     except ValueError as e:
         print(f"[ProjectController.py] Error updating project {project_id} status: {e}", flush=True)
         return jsonify({'error': str(e)}), 400
